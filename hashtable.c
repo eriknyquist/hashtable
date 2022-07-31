@@ -2,16 +2,26 @@
 #include "hashtable_api.h"
 
 
-#define INITIAL_ARRAY_COUNT (32u)
-#define INITIAL_DATA_SIZE   (4096u)
+/**
+ * @brief Max. size for an error message string
+ */
 #define MAX_ERROR_MSG_SIZE  (256u)
 
-
+/**
+ * @brief Internal error message macro
+ */
 #define ERROR(msg) ((void) strncpy(_error_msg, msg, sizeof(_error_msg)))
 
+/**
+ * New tables must have at least this much space available for data
+ */
 #define MIN_REQUIRED_DATA_SIZE (128u)
 
 
+/**
+ * @brief Helper macro for getting the size of a _keyval_pair_list_table_t section,
+ * given a specific number of array elements
+ */
 #define ARRAY_SIZE_BYTES(array_count) \
     (((array_count) * sizeof(_keyval_pair_list_t)) + sizeof(_keyval_pair_list_table_t))
 
@@ -39,6 +49,9 @@ typedef struct
 } _keyval_pair_list_t;
 
 
+/**
+ * Represents the area where key/val pair data is stored
+ */
 typedef struct
 {
     _keyval_pair_list_t freelist;  ///< List of freed key/value pairs
@@ -48,6 +61,9 @@ typedef struct
 } _keyval_pair_data_block_t;
 
 
+/**
+ * Represents a table of singly-linked lists of key-value pair
+ */
 typedef struct
 {
     uint32_t array_count;          ///< Number of _keyval_pair_list_t slots in the array
@@ -55,6 +71,37 @@ typedef struct
 } _keyval_pair_list_table_t;
 
 
+/**
+ * First section in the table->table_data field, holds some misc. housekeeping data.
+ *
+ * table->table_data layout/format:
+ *
+ * The table->table_data field points to the buffer area passed to 'hashtable_create',
+ * and contains the following data:
+ *
+ *  +-----------------------------+ <--- Lowest address of table->table_data
+ *  |                             |
+ *  | _keyval_pair_table_data_t   |
+ *  |                             |
+ *  +-----------------------------+
+ *  |                             |
+ *  | _keyval_pair_list_table_t   |
+ *  |                             |
+ *  +-----------------------------+
+ *  |                             |
+ *  | _keyval_pair_list_t table[] |
+ *  | array items                 |
+ *  |                             |
+ *  +-----------------------------+
+ *  |                             |
+ *  | _keyval_pair_data_block_t   |
+ *  |                             |
+ *  +-----------------------------+
+ *  |                             |
+ *  | data block data[] section   |
+ *  |                             |
+ *  +-----------------------------+
+ */
 typedef struct
 {
     _keyval_pair_list_table_t *list_table;  ///< Convenience pointer to table array
@@ -65,28 +112,39 @@ typedef struct
 } _keyval_pair_table_data_t;
 
 
-static char _error_msg[MAX_ERROR_MSG_SIZE];
+static char _error_msg[MAX_ERROR_MSG_SIZE]  = {'\0'};
 
 
-#define HASH_MAGIC_MULTIPLIER (37u)
-
+// Default hash function
 static uint32_t _default_hash(const void *data, const size_t size)
 {
+    static const uint32_t magic_multiplier = 37u;
     uint8_t *u8_data = (uint8_t *) data;
     uint32_t ret = 0u;
 
     for (size_t i = 0u; i < size; i++)
     {
-        ret = HASH_MAGIC_MULTIPLIER * ret + u8_data[i];
+        ret = magic_multiplier * ret + u8_data[i];
     }
 
     ret += (ret >> 5u);
     return ret;
 }
 
+// Default hashtable_config_t data
 static hashtable_config_t _default_config = {_default_hash, 64u};
 
 
+/**
+ * Calculate a has for the given key data, and return a pointer to the list at the
+ * corresponding table index, such that 'table_index := hash (mod) max_array_count'
+ *
+ * @param table     Pointer to hashtable instance
+ * @param key       Pointer to key data
+ * @param key_size  Key data size in bytes
+ *
+ * @return Pointer to list at corresponding table index
+ */
 static _keyval_pair_list_t *_get_table_list_by_key(hashtable_t *table, const void *key, const size_t key_size)
 {
     uint32_t hash = table->config.hash(key, key_size);
@@ -97,6 +155,16 @@ static _keyval_pair_list_t *_get_table_list_by_key(hashtable_t *table, const voi
 }
 
 
+/**
+ * Search the list of freed key/value pairs, for one that is the same size or larger than
+ * a specific size. If found, the pair will be removed from the free list and a pointer
+ * to the pair will be returned.
+ *
+ * @param table          Pointer to hashtable instance
+ * @param size_required  Number of bytes needed, look for a freed pair equal to or larger than this
+ *
+ * @return Pointer to pair that satisfies size requirement, or NULL if none was found
+ */
 static _keyval_pair_t *_search_free_list(hashtable_t *table, size_t size_required)
 {
     _keyval_pair_table_data_t *td = (_keyval_pair_table_data_t *) table->table_data;
@@ -138,6 +206,22 @@ static _keyval_pair_t *_search_free_list(hashtable_t *table, size_t size_require
 }
 
 
+/**
+ * Store a new key/value pair in the table->table_data section of a hashtable.
+ *
+ * This function will first try to find a suitable existing key/value pair in the
+ * free list (data_block->freelist). If there is none, it will try to carve out the
+ * required space in data_block->data. If data_block->data doesn't have the required
+ * space, then a NULL pointer is returned.
+ *
+ * @param table       Pointer to hashtable instance
+ * @param key         Pointer to key data
+ * @param key_size    Key data size in bytes
+ * @param value       Pointer to value data
+ * @param value_size  Value data size in bytes
+ *
+ * @return Pointer to stored key/value pair, or NULL if there was not sufficient space to store
+ */
 static _keyval_pair_t *_store_keyval_pair(hashtable_t *table, const void *key, const size_t key_size,
                                           const void *value, const size_t value_size)
 {
@@ -176,6 +260,16 @@ static _keyval_pair_t *_store_keyval_pair(hashtable_t *table, const void *key, c
 }
 
 
+/**
+ * Initialize the buffer for a new table structure
+ *
+ * @param table        Pointer to hashtable instance
+ * @param array_count  Key/value pair list table array count
+ * @param buffer       Pointer to location to buffer area
+ * @param buffer_size  Buffer area size in bytes
+ *
+ * @return 0 if successful, -1 if an error occurred
+ */
 static int _setup_new_table(hashtable_t *table, uint32_t array_count, void *buffer, size_t buffer_size)
 {
     size_t array_size = ARRAY_SIZE_BYTES(array_count);
@@ -215,6 +309,20 @@ static int _setup_new_table(hashtable_t *table, uint32_t array_count, void *buff
 }
 
 
+/**
+ * Search a single key/pair list for match key data
+ *
+ * @param table      Pointer to hashtable instance
+ * @param list       Pointer to key/val pair list to search
+ * @param key        Pointer to key data
+ * @param key_size   Size of key data in bytes
+ * @param previous   Pointer to location to store pointer to the item before the
+ *                   matching item. Will only be populated if a matching item is
+ *                   found (this may be needed if the caller wants to unlink the
+ *                   matching item from the list).
+ *
+ * @return Pointer to key/val pair with matching key data, or NULL if none was found
+ */
 static _keyval_pair_t *_search_list_by_key(hashtable_t *table, _keyval_pair_list_t *list,
                                            const void *key, const size_t key_size, _keyval_pair_t **previous)
 {
@@ -246,6 +354,16 @@ static _keyval_pair_t *_search_list_by_key(hashtable_t *table, _keyval_pair_list
 }
 
 
+/**
+ * Unlink a stored key/val pair from a specific key/val list, and add it to the free list
+ *
+ * @param table   Pointer to hashtable instance
+ * @param list    Pointer to list to remove key/val pair list from
+ * @param item    Pointer to key/val pair to remove
+ * @param prev    Pointer to item before the key/val pair to be removed
+ *
+ * @return 0 if successful, -1 if an error occurred
+ */
 static int _remove_from_table(hashtable_t *table, _keyval_pair_list_t *list,
                               _keyval_pair_t *item, _keyval_pair_t *prev)
 {
@@ -285,6 +403,33 @@ static int _remove_from_table(hashtable_t *table, _keyval_pair_list_t *list,
 }
 
 
+/**
+ * Store a new key/value pair and insert references into the list table.
+ * Uses the following steps:
+ *
+ * 1. First, look up the given key to see if it already exists in the hashtable.
+ *    If it *does* already exist, and the space allocated is large enough for the
+ *    new value data being inserted, then all we have to do is write the new value
+ *    data in-place to the already-stored key/value. This would be optimal, both
+ *    in terms of execution time and memory efficiency.
+ *
+ *    If the given key *did* exist, but the available size was not large enough for the
+ *    new value data, then we need to remove the existing key/pair data for the given
+ *    key, and add it to the free list, since the next step involves storing new
+ *    key/pair data with the given key.
+ *
+ * 2. If the previous step failed, invoke _store_keyval_pair to find storage (either
+ *    from the free list, or by allocating new space in the data block) for the new
+ *    key/val pair.
+ *
+ * @param table       Pointer to hashtable instance
+ * @param key         Pointer to key data
+ * @param key_size    Key data size in bytes
+ * @param value       Pointer to value data
+ * @param value_size  Value data size in bytes
+ *
+ * @return 0 if successful, -1 if enough space was not available
+ */
 static int _insert_keyval_pair(hashtable_t *table, const void *key, const size_t key_size,
                                const void *value, const size_t value_size)
 {
@@ -337,6 +482,9 @@ static int _insert_keyval_pair(hashtable_t *table, const void *key, const size_t
 }
 
 
+/**
+ * @see hashtable_api.h
+ */
 int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
                      void *buffer, size_t buffer_size)
 {
@@ -365,6 +513,9 @@ int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
 }
 
 
+/**
+ * @see hashtable_api.h
+ */
 int hashtable_insert(hashtable_t *table, const void *key, const size_t key_size,
                      const void *value, const size_t value_size)
 {
@@ -384,6 +535,9 @@ int hashtable_insert(hashtable_t *table, const void *key, const size_t key_size,
 }
 
 
+/**
+ * @see hashtable_api.h
+ */
 int hashtable_remove(hashtable_t *table, const void *key, const size_t key_size)
 {
     if ((NULL == table) || (NULL == key))
@@ -412,6 +566,9 @@ int hashtable_remove(hashtable_t *table, const void *key, const size_t key_size)
 }
 
 
+/**
+ * @see hashtable_api.h
+ */
 int hashtable_retrieve(hashtable_t *table, const void *key, const size_t key_size,
                        void *value, size_t *value_size)
 {
@@ -442,6 +599,9 @@ int hashtable_retrieve(hashtable_t *table, const void *key, const size_t key_siz
 }
 
 
+/**
+ * @see hashtable_api.h
+ */
 int hashtable_has_key(hashtable_t *table, const void *key, const size_t key_size)
 {
     if ((NULL == table) || (NULL == key))
@@ -463,6 +623,9 @@ int hashtable_has_key(hashtable_t *table, const void *key, const size_t key_size
 }
 
 
+/**
+ * @see hashtable_api.h
+ */
 int hashtable_next_item(hashtable_t *table, void *key, size_t *key_size,
                         void *value, size_t *value_size)
 {
@@ -476,8 +639,8 @@ int hashtable_next_item(hashtable_t *table, void *key, size_t *key_size,
 
     if (td->cursor_limit)
     {
-        ERROR("Cursor limit reached");
-        return -1;
+        // Cursor limit reached
+        return 1;
     }
 
     // Look through lists until the last index
@@ -523,10 +686,13 @@ int hashtable_next_item(hashtable_t *table, void *key, size_t *key_size,
 
     td->cursor_limit = 1u;
     ERROR("Cursor limit reached");
-    return -1;
+    return 1;
 }
 
 
+/**
+ * @see hashtable_api.h
+ */
 int hashtable_reset_cursor(hashtable_t *table)
 {
     if (NULL == table)
@@ -544,12 +710,18 @@ int hashtable_reset_cursor(hashtable_t *table)
 }
 
 
+/**
+ * @see hashtable_api.h
+ */
 hashtable_config_t *hashtable_default_config(void)
 {
     return &_default_config;
 }
 
 
+/**
+ * @see hashtable_api.h
+ */
 char *hashtable_error_message(void)
 {
     return _error_msg;
