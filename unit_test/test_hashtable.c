@@ -3,10 +3,77 @@
 
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdbool.h>
 
 
+// Min. size of a randomly-generated key or value
+#define MIN_STR_LEN (4u)
+
+
+// Max. size of a randomly-generated key or value
+#define MAX_STR_LEN (24u)
+
+
+typedef struct
+{
+    char key[MAX_STR_LEN + 1u];
+    char value[MAX_STR_LEN + 1u];
+    size_t key_size;
+    size_t value_size;
+} _test_keyval_pair_t;
+
+
 static uint8_t _buffer[1024 * 1024];
+
+static int _rand_range(int lower, int upper)
+{
+    return (rand() % (upper - lower + 1)) + lower;
+}
+
+static void _rand_str(char *output, size_t *num_chars)
+{
+    *num_chars = _rand_range(MIN_STR_LEN, MAX_STR_LEN);
+
+    for (unsigned int i = 0; i < *num_chars; i++)
+    {
+        output[i] = (char) _rand_range(0x21, 0x7e);
+    }
+
+    output[*num_chars] = '\0';
+}
+
+
+static void _generate_random_items_and_insert(hashtable_t *table, _test_keyval_pair_t *pairs, unsigned int num_items)
+{
+    for (unsigned int i = 0; i < num_items; i++)
+    {
+        _rand_str(pairs[i].key, &pairs[i].key_size);
+        _rand_str(pairs[i].value, &pairs[i].value_size);
+
+        TEST_ASSERT_EQUAL_INT(0, hashtable_insert(table, pairs[i].key, pairs[i].key_size,
+                                                  pairs[i].value, pairs[i].value_size));
+    }
+}
+
+
+static void _verify_table_contents(hashtable_t *table, _test_keyval_pair_t *pairs, unsigned int num_items)
+{
+    for (unsigned int i = 0; i < num_items; i++)
+    {
+        // Verify table has key
+        TEST_ASSERT_EQUAL_INT(1, hashtable_has_key(table, pairs[i].key, pairs[i].key_size));
+
+        // Retrieve value and verify it matches what we put in
+        char value[MAX_STR_LEN + 1u];
+        size_t value_size;
+
+        TEST_ASSERT_EQUAL_INT(0, hashtable_retrieve(table, pairs[i].key, pairs[i].key_size,
+                                                    value, &value_size));
+        TEST_ASSERT_EQUAL_INT(pairs[i].value_size, value_size);
+        TEST_ASSERT_EQUAL_INT(0, memcmp(pairs[i].value, value, value_size));
+    }
+}
 
 
 void setUp(void)
@@ -264,6 +331,21 @@ void test_hashtable_reset_cursor_null_table(void)
 }
 
 
+// Tests that all items exist in the table and can be retrieved, after 10 items are inserted
+void test_hashtable_insert_100items(void)
+{
+    hashtable_t table;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+
+    const unsigned int num_items = 10;
+    _test_keyval_pair_t pairs[num_items];
+
+    _generate_random_items_and_insert(&table, pairs, num_items);
+
+    _verify_table_contents(&table, pairs, num_items);
+}
+
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -293,6 +375,9 @@ int main(void)
     RUN_TEST(test_hashtable_next_item_null_key);
     RUN_TEST(test_hashtable_next_item_null_value);
     RUN_TEST(test_hashtable_reset_cursor_null_table);
+
+    // Woohoo now the more fun tests
+    RUN_TEST(test_hashtable_insert_100items);
 
     return UNITY_END();
 }

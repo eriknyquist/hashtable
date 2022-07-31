@@ -589,7 +589,7 @@ int hashtable_remove(hashtable_t *table, const void *key, const size_t key_size)
 int hashtable_retrieve(hashtable_t *table, const void *key, const size_t key_size,
                        void *value, size_t *value_size)
 {
-    if ((NULL == table) || (NULL == key) || (value))
+    if ((NULL == table) || (NULL == key) || (NULL == value))
     {
         ERROR("NULL pointer passed to function");
         return -1;
