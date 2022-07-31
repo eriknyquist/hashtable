@@ -4,7 +4,7 @@
 
 #include "hashtable_api.h"
 
-
+#define TABLE_BUFFER_SIZE (1024 * 1024 )
 #define MAX_STRING_SIZE (32u)
 
 
