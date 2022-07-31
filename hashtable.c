@@ -9,6 +9,12 @@
 
 #define ERROR(msg) ((void) strncpy(_error_msg, msg, sizeof(_error_msg)))
 
+#define MIN_REQUIRED_DATA_SIZE (128u)
+
+
+#define ARRAY_SIZE_BYTES(array_count) \
+    (((array_count) * sizeof(_keyval_pair_list_t)) + sizeof(_keyval_pair_list_table_t))
+
 
 /**
  * Holds information about a single key/value pair stored in the table.
@@ -29,7 +35,7 @@ typedef struct _keyval_pair
 typedef struct
 {
     _keyval_pair_t *head;  ///< Head (first) item
-    _keyval_pair_t *tail; ///< Tail (last) item
+    _keyval_pair_t *tail;  ///< Tail (last) item
 } _keyval_pair_list_t;
 
 
@@ -53,10 +59,32 @@ typedef struct
 {
     _keyval_pair_list_table_t *list_table;  ///< Convenience pointer to table array
     _keyval_pair_data_block_t *data_block;  ///< Convenience pointer to key/val data block
+    uint32_t cursor_array_index;            ///< Cursor current table index for iteration
+    _keyval_pair_t *cursor_item;            ///< Cursor current item pointer for iteration
+    uint8_t cursor_limit;                   ///< Set to 1 when all items have been iterated through
 } _keyval_pair_table_data_t;
 
 
 static char _error_msg[MAX_ERROR_MSG_SIZE];
+
+
+#define HASH_MAGIC_MULTIPLIER (37u)
+
+static uint32_t _default_hash(const void *data, const size_t size)
+{
+    uint8_t *u8_data = (uint8_t *) data;
+    uint32_t ret = 0u;
+
+    for (size_t i = 0u; i < size; i++)
+    {
+        ret = HASH_MAGIC_MULTIPLIER * ret + u8_data[i];
+    }
+
+    ret += (ret >> 5u);
+    return ret;
+}
+
+static hashtable_config_t _default_config = {_default_hash, 64u};
 
 
 static _keyval_pair_list_t *_get_table_list_by_key(hashtable_t *table, const void *key, const size_t key_size)
@@ -148,25 +176,29 @@ static _keyval_pair_t *_store_keyval_pair(hashtable_t *table, const void *key, c
 }
 
 
-static void *_setup_new_table(hashtable_t *table, uint32_t array_count, size_t data_size, size_t *bytes_allocated)
+static int _setup_new_table(hashtable_t *table, uint32_t array_count, void *buffer, size_t buffer_size)
 {
-    size_t array_size = (array_count * sizeof(_keyval_pair_list_t)) + sizeof(_keyval_pair_list_table_t);
+    size_t array_size = ARRAY_SIZE_BYTES(array_count);
+    size_t min_required_size = sizeof(_keyval_pair_table_data_t) + array_size +
+                               sizeof(_keyval_pair_data_block_t) + MIN_REQUIRED_DATA_SIZE;
 
-    // Allocate enough space for the requested data size AND the array with requested count
-    size_t size_to_allocate = sizeof(_keyval_pair_table_data_t) + array_size + data_size;
-
-    void *ret = table->config.alloc(size_to_allocate);
-    if (NULL == ret)
+    if (buffer_size < min_required_size)
     {
-        return NULL;
+        ERROR("Allocated size is too small");
+        return -1;
     }
 
-    uint8_t *u8_ret = (uint8_t *) ret;
+    uint8_t *u8_ret = (uint8_t *) buffer;
 
     // Populate convenience pointers
-    _keyval_pair_table_data_t *td = (_keyval_pair_table_data_t *) ret;
+    _keyval_pair_table_data_t *td = (_keyval_pair_table_data_t *) buffer;
     td->list_table = (_keyval_pair_list_table_t *) (u8_ret + sizeof(_keyval_pair_table_data_t));
     td->data_block = (_keyval_pair_data_block_t *) (u8_ret + sizeof(_keyval_pair_table_data_t) + array_size);
+
+    // Initialize cursor values
+    td->cursor_array_index = 0u;
+    td->cursor_item = td->list_table->table[0].head;
+    td->cursor_limit = 0u;
 
     // NULL-ify all the array entries
     (void) memset(td->list_table, 0, array_size);
@@ -175,11 +207,10 @@ static void *_setup_new_table(hashtable_t *table, uint32_t array_count, size_t d
 
     // Initialize key/pair value data block
     td->data_block->freelist = NULL;
-    td->data_block->total_bytes = data_size - sizeof(_keyval_pair_data_block_t);
+    td->data_block->total_bytes = buffer_size - min_required_size;
     td->data_block->bytes_used = 0u;
 
-    *bytes_allocated = size_to_allocate;
-    return ret;
+    return 0;
 }
 
 
@@ -303,26 +334,25 @@ static int _insert_keyval_pair(hashtable_t *table, const void *key, const size_t
 }
 
 
-int hashtable_create(hashtable_t *table, const hashtable_config_t *config)
+int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
+                     void *buffer, size_t buffer_size)
 {
     if ((NULL == table) || (NULL == config))
-    {
-        ERROR("NULL pointer in hashtable_config_t");
-        return -1;
-    }
-
-    if ((NULL == config->alloc) || (NULL == config->free) || (NULL == config->hash))
     {
         ERROR("NULL pointer passed to function");
         return -1;
     }
 
+    if (NULL == config->hash)
+    {
+        ERROR("NULL function pointer in hashtable_config_t");
+        return -1;
+    }
+
     (void) memcpy(&table->config, config, sizeof(table->config));
 
-    table->table_data = _setup_new_table(table, INITIAL_ARRAY_COUNT, INITIAL_DATA_SIZE, &table->data_size);
-    if (NULL == table->table_data)
+    if (_setup_new_table(table, config->initial_array_count, buffer, buffer_size) < 0)
     {
-        ERROR("Failed to allocate memory for table");
         return -1;
     }
 
@@ -429,7 +459,66 @@ int hashtable_has_key(hashtable_t *table, const void *key, const size_t key_size
 }
 
 
-int hashtable_destroy(hashtable_t *table)
+int hashtable_next_item(hashtable_t *table, void *key, size_t *key_size,
+                        void *value, size_t *value_size)
+{
+    if ((NULL == table) || (NULL == key) || (NULL == value))
+    {
+        ERROR("NULL pointer passed to function");
+        return -1;
+    }
+
+    _keyval_pair_table_data_t *td = (_keyval_pair_table_data_t *) table->table_data;
+
+    if (td->cursor_limit)
+    {
+        ERROR("Cursor limit reached");
+        return -1;
+    }
+
+    // Look through lists until the last index
+    while (td->cursor_array_index < td->list_table->array_count)
+    {
+        _keyval_pair_list_t *list = &td->list_table->table[td->cursor_array_index];
+
+        if (NULL == td->cursor_item)
+        {
+            /* If item pointer is null, we just moved to a new slot, so
+             * set to the head of the current list */
+            td->cursor_item = list->head;
+        }
+
+        // Copy out the next non-NULL item in the list
+        if (NULL != td->cursor_item)
+        {
+            (void) memcpy(key, td->cursor_item->data, td->cursor_item->key_size);
+            (void) memcpy(value, td->cursor_item->data + td->cursor_item->key_size,
+                          td->cursor_item->value_size);
+
+            if (NULL != key_size)
+            {
+                *key_size = td->cursor_item->key_size;
+            }
+
+            if (NULL != value_size)
+            {
+                *value_size = td->cursor_item->value_size;
+            }
+
+            td->cursor_item = td->cursor_item->next;
+            return 0;
+        }
+
+        td->cursor_array_index += 1u;
+    }
+
+    td->cursor_limit = 1u;
+    ERROR("Cursor limit reached");
+    return -1;
+}
+
+
+int hashtable_reset_cursor(hashtable_t *table)
 {
     if (NULL == table)
     {
@@ -437,11 +526,18 @@ int hashtable_destroy(hashtable_t *table)
         return -1;
     }
 
-    table->config.free(table->table_data);
-    table->table_data = NULL;
-    table->data_size = 0;
-    table->entry_count = 0;
+    _keyval_pair_table_data_t *td = (_keyval_pair_table_data_t *) table->table_data;
+    td->cursor_array_index = 0u;
+    td->cursor_item = td->list_table->table[0].head;
+    td->cursor_limit = 0u;
+
     return 0;
+}
+
+
+hashtable_config_t *hashtable_default_config(void)
+{
+    return &_default_config;
 }
 
 
