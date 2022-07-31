@@ -1,3 +1,12 @@
+/**
+ * @file hashtable.c
+ *
+ * @author Erik K. Nyquist
+ *
+ * @brief Implements a separate-chaining hashtable that accepts any/all types of data for keys and values.
+ */
+
+
 #include <string.h>
 #include "hashtable_api.h"
 
@@ -107,6 +116,7 @@ typedef struct
     _keyval_pair_list_table_t *list_table;  ///< Convenience pointer to table array
     _keyval_pair_data_block_t *data_block;  ///< Convenience pointer to key/val data block
     uint32_t cursor_array_index;            ///< Cursor current table index for iteration
+    uint32_t cursor_items_traversed;        ///< Number of items traversed by cursor
     _keyval_pair_t *cursor_item;            ///< Cursor current item pointer for iteration
     uint8_t cursor_limit;                   ///< Set to 1 when all items have been iterated through
 } _keyval_pair_table_data_t;
@@ -291,6 +301,7 @@ static int _setup_new_table(hashtable_t *table, uint32_t array_count, void *buff
 
     // Initialize cursor values
     td->cursor_array_index = 0u;
+    td->cursor_items_traversed = 0u;
     td->cursor_item = td->list_table->table[0].head;
     td->cursor_limit = 0u;
 
@@ -500,6 +511,12 @@ int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
         return -1;
     }
 
+    if (0u == config->initial_array_count)
+    {
+        ERROR("Zero array count in hashtable_config_t");
+        return -1;
+    }
+
     (void) memcpy(&table->config, config, sizeof(table->config));
 
     if (_setup_new_table(table, config->initial_array_count, buffer, buffer_size) < 0)
@@ -525,7 +542,7 @@ int hashtable_insert(hashtable_t *table, const void *key, const size_t key_size,
         return -1;
     }
 
-    if ((0u == key_size) || (0 == value_size))
+    if ((0u == key_size) || (0u == value_size))
     {
         ERROR("Invalid size value passed to function");
         return -1;
@@ -626,6 +643,25 @@ int hashtable_has_key(hashtable_t *table, const void *key, const size_t key_size
 /**
  * @see hashtable_api.h
  */
+int hashtable_bytes_remaining(hashtable_t *table, size_t *bytes_remaining)
+{
+    if ((NULL == table) || (NULL == bytes_remaining))
+    {
+        ERROR("NULL pointer passed to function");
+        return -1;
+    }
+
+
+    _keyval_pair_table_data_t *td = (_keyval_pair_table_data_t *) table->table_data;
+    *bytes_remaining = td->data_block->total_bytes - td->data_block->bytes_used;
+
+    return 0;
+}
+
+
+/**
+ * @see hashtable_api.h
+ */
 int hashtable_next_item(hashtable_t *table, void *key, size_t *key_size,
                         void *value, size_t *value_size)
 {
@@ -643,8 +679,9 @@ int hashtable_next_item(hashtable_t *table, void *key, size_t *key_size,
         return 1;
     }
 
-    // Look through lists until the last index
-    while (td->cursor_array_index < td->list_table->array_count)
+    // Look through lists until the last index, or until we've traversed all stored items
+    while ((td->cursor_array_index < td->list_table->array_count) &&
+           (td->cursor_items_traversed < table->entry_count))
     {
         _keyval_pair_list_t *list = &td->list_table->table[td->cursor_array_index];
 
@@ -678,6 +715,7 @@ int hashtable_next_item(hashtable_t *table, void *key, size_t *key_size,
                 td->cursor_array_index += 1u;
             }
 
+            td->cursor_items_traversed += 1u;
             return 0;
         }
 
@@ -703,6 +741,7 @@ int hashtable_reset_cursor(hashtable_t *table)
 
     _keyval_pair_table_data_t *td = (_keyval_pair_table_data_t *) table->table_data;
     td->cursor_array_index = 0u;
+    td->cursor_items_traversed = 0u;
     td->cursor_item = td->list_table->table[0].head;
     td->cursor_limit = 0u;
 

@@ -1,7 +1,16 @@
+/**
+ * @file hashtable_api.h
+ *
+ * @author Erik K. Nyquist
+ *
+ * @brief Implements a separate-chaining hashtable that accepts any/all types of data for keys and values.
+ */
+
 #ifndef HASHTABLE_API_H
 #define HASHTABLE_API_H
 
 #include <stdint.h>
+
 
 /**
  * @brief Configuration data for a single hashtable instance
@@ -107,6 +116,18 @@ int hashtable_retrieve(hashtable_t *table, const void *key, const size_t key_siz
  *           Use #hashtable_error_message to get an error message.
  */
 int hashtable_has_key(hashtable_t *table, const void *key, const size_t key_size);
+
+
+/**
+ * Number of bytes remaining for key/value pair data storage
+ *
+ * @param table            Pointer to hashtable instance
+ * @param bytes_remaining  Pointer to location to store number of bytes remaining
+ *
+ * @return   0 if successful, -1 if an error occurred. Use #hashtable_error_message
+ *           to get an error message.
+ */
+int hashtable_bytes_remaining(hashtable_t *table, size_t *bytes_remaining);
 
 
 /**
