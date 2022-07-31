@@ -41,7 +41,7 @@ typedef struct
 
 typedef struct
 {
-    _keyval_pair_list_t *freelist; ///< List of freed key/value pairs
+    _keyval_pair_list_t freelist;  ///< List of freed key/value pairs
     size_t total_bytes;            ///< Total bytes available for key/value pair data
     size_t bytes_used;             ///< Total bytes used (including freed) by key/value pair data
     uint8_t data[];                ///< Pointer to key/value data section, size not known at compile time
@@ -100,7 +100,7 @@ static _keyval_pair_list_t *_get_table_list_by_key(hashtable_t *table, const voi
 static _keyval_pair_t *_search_free_list(hashtable_t *table, size_t size_required)
 {
     _keyval_pair_table_data_t *td = (_keyval_pair_table_data_t *) table->table_data;
-    _keyval_pair_t *curr = td->data_block->freelist->head;
+    _keyval_pair_t *curr = td->data_block->freelist.head;
     _keyval_pair_t *prev = NULL;
 
     while (NULL != curr)
@@ -110,14 +110,14 @@ static _keyval_pair_t *_search_free_list(hashtable_t *table, size_t size_require
         {
             /* Found a freed pair that is the same size or larger than what we need,
              * so remove it from the free list and return a pointer */
-            if (curr == td->data_block->freelist->head)
+            if (curr == td->data_block->freelist.head)
             {
-                td->data_block->freelist->head = curr->next;
+                td->data_block->freelist.head = curr->next;
             }
 
-            if (curr == td->data_block->freelist->tail)
+            if (curr == td->data_block->freelist.tail)
             {
-                td->data_block->freelist->tail = prev;
+                td->data_block->freelist.tail = prev;
             }
 
             if (NULL != prev)
@@ -150,7 +150,7 @@ static _keyval_pair_t *_store_keyval_pair(hashtable_t *table, const void *key, c
     {
         // Nothing suitable in the free list, see if we can carve out space in the data block
         _keyval_pair_table_data_t *td = (_keyval_pair_table_data_t *) table->table_data;
-        size_t size_remaining = td->data_block->total_bytes = - td->data_block->bytes_used;
+        size_t size_remaining = td->data_block->total_bytes - td->data_block->bytes_used;
 
         if (size_required > size_remaining)
         {
@@ -206,7 +206,8 @@ static int _setup_new_table(hashtable_t *table, uint32_t array_count, void *buff
     td->list_table->array_count = array_count;
 
     // Initialize key/pair value data block
-    td->data_block->freelist = NULL;
+    td->data_block->freelist.head = NULL;
+    td->data_block->freelist.tail = NULL;
     td->data_block->total_bytes = buffer_size - min_required_size;
     td->data_block->bytes_used = 0u;
 
@@ -266,7 +267,7 @@ static int _remove_from_table(hashtable_t *table, _keyval_pair_list_t *list,
 
     // Add item to free list
     _keyval_pair_table_data_t *td = (_keyval_pair_table_data_t *) table->table_data;
-    _keyval_pair_list_t *freelist = td->data_block->freelist;
+    _keyval_pair_list_t *freelist = &td->data_block->freelist;
 
     if (NULL == freelist->head)
     {
@@ -279,6 +280,7 @@ static int _remove_from_table(hashtable_t *table, _keyval_pair_list_t *list,
         freelist->tail = item;
     }
 
+    table->entry_count -= 1u;
     return 0;
 }
 
@@ -330,6 +332,7 @@ static int _insert_keyval_pair(hashtable_t *table, const void *key, const size_t
         }
     }
 
+    table->entry_count += 1u;
     return 0;
 }
 
@@ -357,6 +360,7 @@ int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
     }
 
     table->entry_count = 0u;
+    table->table_data = buffer;
     return 0;
 }
 
@@ -506,6 +510,11 @@ int hashtable_next_item(hashtable_t *table, void *key, size_t *key_size,
             }
 
             td->cursor_item = td->cursor_item->next;
+            if (NULL == td->cursor_item)
+            {
+                td->cursor_array_index += 1u;
+            }
+
             return 0;
         }
 
