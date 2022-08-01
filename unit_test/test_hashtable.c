@@ -412,13 +412,13 @@ void test_hashtable_reset_cursor_null_table(void)
 }
 
 
-// Tests that all items exist in the table and can be retrieved, after 100 items are inserted
-void test_hashtable_insert100items(void)
+// Tests that all items exist in the table and can be retrieved, after 1000 items are inserted
+void test_hashtable_insert1000items(void)
 {
     hashtable_t table;
     TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
 
-    const unsigned int num_items = 100;
+    const unsigned int num_items = 1000;
     _test_keyval_pair_t pairs[num_items];
 
     _generate_random_items_and_insert(&table, pairs, num_items);
@@ -427,32 +427,32 @@ void test_hashtable_insert100items(void)
 }
 
 
-// Tests that all expected items exist in the table and can be retrieved, after 100 items are inserted
-// and then 50 items are removed
-void test_hashtable_insert100items_remove50(void)
+// Tests that all expected items exist in the table and can be retrieved, after 1000 items are inserted
+// and then 500 items are removed
+void test_hashtable_insert1000items_remove500(void)
 {
     hashtable_t table;
     TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
 
-    const unsigned int num_items = 100;
+    const unsigned int num_items = 1000;
     _test_keyval_pair_t pairs[num_items];
 
     _generate_random_items_and_insert(&table, pairs, num_items);
 
-    _remove_random_items(&table, pairs, num_items, 50);
+    _remove_random_items(&table, pairs, num_items, 500);
 
     _verify_table_contents(&table, pairs, num_items);
 }
 
 
 // Tests that iterating through all items via hashtable_next_item yields the same
-// data as retrieving items via hashtable_retrieve, after inserting 100 items
-void test_hashtable_next_item_iterate100items(void)
+// data as retrieving items via hashtable_retrieve, after inserting 1000 items
+void test_hashtable_next_item_iterate1000items(void)
 {
     hashtable_t table;
     TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
 
-    const unsigned int num_items = 100;
+    const unsigned int num_items = 1000;
     _test_keyval_pair_t pairs[num_items];
 
     _generate_random_items_and_insert(&table, pairs, num_items);
@@ -464,13 +464,13 @@ void test_hashtable_next_item_iterate100items(void)
 
 
 // Tests that iterating through all items via hashtable_next_item yields the same
-// data as retrieving items via hashtable_retrieve, after inserting 100 items and removing 50
-void test_hashtable_next_item_iterate100items_remove50(void)
+// data as retrieving items via hashtable_retrieve, after inserting 1000 items and removing 500
+void test_hashtable_next_item_iterate1000items_remove500(void)
 {
     hashtable_t table;
     TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
 
-    const unsigned int num_items = 100;
+    const unsigned int num_items = 1000;
     _test_keyval_pair_t pairs[num_items];
 
     _generate_random_items_and_insert(&table, pairs, num_items);
@@ -478,10 +478,107 @@ void test_hashtable_next_item_iterate100items_remove50(void)
     _verify_table_contents(&table, pairs, num_items);
     _verify_iterated_table_contents(&table, pairs, num_items, 0);
 
-    _remove_random_items(&table, pairs, num_items, 50);
+    _remove_random_items(&table, pairs, num_items, 500);
 
     _verify_table_contents(&table, pairs, num_items);
-    _verify_iterated_table_contents(&table, pairs, num_items, 50);
+    _verify_iterated_table_contents(&table, pairs, num_items, 500);
+}
+
+
+// Tests that the value reported by hashtable_bytes_remaining does not change
+// after inserting the same 1000 items that were previously inserted and removed
+void test_bytes_remaining_unchanged_after_reinserting_removed_items(void)
+{
+    hashtable_t table;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+
+    const unsigned int num_items = 1000;
+    _test_keyval_pair_t pairs[num_items];
+
+    _generate_random_items_and_insert(&table, pairs, num_items);
+
+    size_t bytes_remaining_1 = 0u;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_bytes_remaining(&table, &bytes_remaining_1));
+
+    // Remove all items
+    for (unsigned int i = 0; i < num_items; i++)
+    {
+        TEST_ASSERT_EQUAL_INT(0, hashtable_remove(&table, pairs[i].key, pairs[i].key_size));
+    }
+
+    size_t bytes_remaining_2 = 0u;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_bytes_remaining(&table, &bytes_remaining_2));
+
+    // Bytes remaining should not have changed after removing all items
+    TEST_ASSERT_EQUAL_INT(bytes_remaining_1, bytes_remaining_2);
+
+    // Re-insert all items
+    for (unsigned int i = 0; i < num_items; i++)
+    {
+        TEST_ASSERT_EQUAL_INT(0, hashtable_insert(&table, pairs[i].key, pairs[i].key_size,
+                                                  pairs[i].value, pairs[i].value_size));
+    }
+
+    size_t bytes_remaining_3 = 0u;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_bytes_remaining(&table, &bytes_remaining_3));
+
+    // Bytes remaining should not have changed after re-inserting all items,
+    // since all the space we need should be in the free list
+    TEST_ASSERT_EQUAL_INT(bytes_remaining_2, bytes_remaining_3);
+}
+
+
+// Tests that the value reported by hashtable_bytes_remaining does not change after
+// overwriting an existing key with a value of the same size
+void test_hashtable_bytes_remaining_overwrite_samesizevalue(void)
+{
+    hashtable_t table;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+
+    // Get bytes remaining before inserting anything
+    size_t bytes_remaining_1 = 0u;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_bytes_remaining(&table, &bytes_remaining_1));
+
+    char key[MAX_STR_LEN];
+    char value1[MAX_STR_LEN];
+    size_t key_size = 0u;
+    size_t value1_size = 0u;
+
+    // Generate initial key/value pair and insert it
+    _rand_str(key, &key_size);
+    _rand_str(value1, &value1_size);
+
+    TEST_ASSERT_EQUAL_INT(0, hashtable_insert(&table, key, key_size, value1, value1_size));
+    TEST_ASSERT_EQUAL_INT(1u, table.entry_count);
+
+    size_t bytes_remaining_2 = 0u;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_bytes_remaining(&table, &bytes_remaining_2));
+
+    // Should be fewer bytes remaining after inserting first item
+    TEST_ASSERT_TRUE(bytes_remaining_2 < bytes_remaining_1);
+
+    // Generate a new value (all 0xff this time) and insert it with the same key,
+    // just has to be the same size as the original value
+    char value2[MAX_STR_LEN];
+    (void) memset(value2, 0xff, sizeof(value2));
+    size_t value2_size = value1_size;
+
+    TEST_ASSERT_EQUAL_INT(0, hashtable_insert(&table, key, key_size, value2, value2_size));
+    TEST_ASSERT_EQUAL_INT(1u, table.entry_count);
+
+    size_t bytes_remaining_3 = 0u;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_bytes_remaining(&table, &bytes_remaining_3));
+
+    // Bytes remaining should be unchanged, since the new value was the same size
+    TEST_ASSERT_EQUAL_INT(bytes_remaining_2, bytes_remaining_3);
+
+    // Retrieve item and verify value matches new value
+    char read_value[MAX_STR_LEN];
+    size_t read_size = 0u;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_retrieve(&table, key, key_size, read_value, &read_size));
+
+    TEST_ASSERT_EQUAL_INT(value2_size, read_size);
+    TEST_ASSERT_EQUAL_INT(0, memcmp(value2, read_value, read_size));
 }
 
 
@@ -516,10 +613,12 @@ int main(void)
     RUN_TEST(test_hashtable_reset_cursor_null_table);
 
     // Woohoo now the more fun tests
-    RUN_TEST(test_hashtable_insert100items);
-    RUN_TEST(test_hashtable_insert100items_remove50);
-    RUN_TEST(test_hashtable_next_item_iterate100items);
-    RUN_TEST(test_hashtable_next_item_iterate100items_remove50);
+    RUN_TEST(test_hashtable_insert1000items);
+    RUN_TEST(test_hashtable_insert1000items_remove500);
+    RUN_TEST(test_hashtable_next_item_iterate1000items);
+    RUN_TEST(test_hashtable_next_item_iterate1000items_remove500);
+    RUN_TEST(test_bytes_remaining_unchanged_after_reinserting_removed_items);
+    RUN_TEST(test_hashtable_bytes_remaining_overwrite_samesizevalue);
 
     return UNITY_END();
 }
