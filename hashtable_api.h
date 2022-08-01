@@ -18,8 +18,8 @@
  * - Uses <a href="https://en.wikipedia.org/wiki/Hash_table#Separate_chaining">separate chaining</a> to resolve collisions.
  * - Keys and values are byte streams of arbitrary length/contents, so keys and values can
  *   be any data type.
- * - No memory allocation of any kind, and no table re-sizing. All table data
- *   is stored in a buffer that must be provided by the caller on hashtable creation,
+ * - No dynamic memory allocation, and no table re-sizing. All table data is stored
+ *   in a buffer that must be provided by the caller on hashtable creation,
  *   and when there is not enough space remaining in that buffer, insertion of new
  *   items will fail.
  * - Provide/write your own hash function (although a default hash function, optimized

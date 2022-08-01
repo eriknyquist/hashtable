@@ -3,7 +3,8 @@
  *
  * @author Erik K. Nyquist
  *
- * @brief Implements a separate-chaining hashtable that accepts any/all types of data for keys and values.
+ * @brief Implements a lightweight separate-chaining hashtable designed to be flexible
+ *        enough for embedded systems.
  */
 
 
