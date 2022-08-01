@@ -1,3 +1,10 @@
+/*! \mainpage Separate-chaining hashtable implementation in C
+ *
+ * This is the landing page for the
+ * \link hashtable_api.h
+ * API documentation for hashtable_api.h
+ */
+
 /**
  * @file hashtable_api.h
  *

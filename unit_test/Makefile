@@ -25,7 +25,7 @@ TEST_PROG := $(OUTPUT_DIR)/test_hashtable
 
 SRC_FILES := ../hashtable.c test_hashtable.c unity/src/unity.c
 INCLUDES := -Iunity/src -I../
-CFLAGS := -Wall -std=c99
+CFLAGS := -Wall -pedantic -std=c99
 
 .PHONY: clean test
 
