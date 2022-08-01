@@ -1,4 +1,4 @@
-/*! \mainpage Separate-chaining hashtable implementation in C
+/*! \mainpage A lightweight separate-chaining hashtable in C
  *
  * \section intro_sec Introduction
  *
@@ -31,8 +31,8 @@
  *
  * @author Erik K. Nyquist
  *
- * @brief Implements a lightweight separate-chaining hashtable designed to be flexible and
- *        simple enough for embedded systems.
+ * @brief Implements a lightweight separate-chaining hashtable designed to be flexible
+ *        enough for embedded systems.
  */
 
 #ifndef HASHTABLE_API_H

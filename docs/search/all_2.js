@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['entry_5fcount_0',['entry_count',['../structhashtable__t.html#a3dc4a946903f00c879c3efc192e429a3',1,'hashtable_t']]]
+  ['data_5fsize_0',['data_size',['../structhashtable__t.html#a8d5cfcf11d4a4bbaadf6002a373d59cd',1,'hashtable_t']]]
 ];

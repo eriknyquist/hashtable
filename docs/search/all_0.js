@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['config_0',['config',['../structhashtable__t.html#ace8cbe560239634c25d7c6879eacf7fc',1,'hashtable_t']]]
+  ['a_20lightweight_20separate_2dchaining_20hashtable_20in_20c_0',['A lightweight separate-chaining hashtable in C',['../index.html',1,'']]]
 ];
