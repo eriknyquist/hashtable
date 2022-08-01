@@ -464,31 +464,29 @@ static int _insert_keyval_pair(hashtable_t *table, const void *key, const size_t
             }
         }
     }
-    else
+
+    // No item with this key exists, try to allocate new space
+    pair = _store_keyval_pair(table, key, key_size, value, value_size);
+    if (NULL == pair)
     {
-        // No item with this key exists yet, try to allocate new space
-        pair = _store_keyval_pair(table, key, key_size, value, value_size);
-        if (NULL == pair)
-        {
-            return -1;
-        }
-
-        // Add new key/val pair into the list at the current slot in the table
-        if (NULL == list->head)
-        {
-            list->head = pair;
-            list->tail = pair;
-        }
-        else
-        {
-            list->tail->next = pair;
-            list->tail = pair;
-        }
-
-        pair->next = NULL;
+        return -1;
     }
 
+    // Add new key/val pair into the list at the current slot in the table
+    if (NULL == list->head)
+    {
+        list->head = pair;
+        list->tail = pair;
+    }
+    else
+    {
+        list->tail->next = pair;
+        list->tail = pair;
+    }
+
+    pair->next = NULL;
     table->entry_count += 1u;
+
     return 0;
 }
 
