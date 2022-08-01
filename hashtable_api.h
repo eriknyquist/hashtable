@@ -1,8 +1,29 @@
 /*! \mainpage Separate-chaining hashtable implementation in C
  *
- * This is the landing page for the
+ * \section intro_sec Introduction
+ *
+ * See
  * \link hashtable_api.h
- * API documentation for hashtable_api.h
+ * API documentation for hashtable_api.h.
+ * \endlink
+ *
+ * This module implements a lightweight hashtable that uses separate chaining to resolve collisions.
+ *
+ * This hashtable is designed to be flexible enough for use on embedded systems that have
+ * no dynamic memory, and/or limited memory in general.
+ *
+ * \section features_sec Features/limitations
+ *
+ * - Implemented in pure C99, and requires only <code>stdint.h</code> and <code>string.h</code>.
+ * - Uses <a href="https://en.wikipedia.org/wiki/Hash_table#Separate_chaining">separate chaining</a> to resolve collisions.
+ * - Keys and values are byte streams of arbitrary length/contents, so keys and values can
+ *   be any data type.
+ * - No memory allocation of any kind, and no table re-sizing. All table data
+ *   is stored in a buffer that must be provided by the caller on hashtable creation,
+ *   and when there is not enough space remaining in that buffer, insertion of new
+ *   items will fail.
+ * - Provide/write your own hash function (although a default hash function, optimized
+ *   for ASCII strings, is provided).
  */
 
 /**
@@ -10,7 +31,8 @@
  *
  * @author Erik K. Nyquist
  *
- * @brief Implements a separate-chaining hashtable that accepts any/all types of data for keys and values.
+ * @brief Implements a lightweight separate-chaining hashtable designed to be flexible and
+ *        simple enough for embedded systems.
  */
 
 #ifndef HASHTABLE_API_H

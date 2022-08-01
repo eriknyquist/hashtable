@@ -66,7 +66,20 @@ $(function() {
   <div class="headertitle"><div class="title">Separate-chaining hashtable implementation in C </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p >This is the landing page for the <a class="el" href="hashtable__api_8h.html">API documentation for hashtable_api.h </a></p>
+<div class="textblock"><h1><a class="anchor" id="intro_sec"></a>
+Introduction</h1>
+<p >See <a class="el" href="hashtable__api_8h.html">API documentation for hashtable_api.h. </a></p>
+<p >This module implements a lightweight hashtable that uses separate chaining to resolve collisions.</p>
+<p >This hashtable is designed to be flexible enough for use on embedded systems that have no dynamic memory, and/or limited memory in general.</p>
+<h1><a class="anchor" id="features_sec"></a>
+Features/limitations</h1>
+<ul>
+<li>Implemented in pure C99, and requires only <code>stdint.h</code> and <code>string.h</code>.</li>
+<li>Uses <a href="https://en.wikipedia.org/wiki/Hash_table#Separate_chaining">separate chaining</a> to resolve collisions.</li>
+<li>Keys and values are byte streams of arbitrary length/contents, so keys and values can be any data type.</li>
+<li>No memory allocation of any kind, and no table re-sizing. All table data is stored in a buffer that must be provided by the caller on hashtable creation, and when there is not enough space remaining in that buffer, insertion of new items will fail.</li>
+<li>Provide/write your own hash function (although a default hash function, optimized for ASCII strings, is provided). </li>
+</ul>
 </div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->
