@@ -21,6 +21,7 @@ typedef struct
     char value[MAX_STR_LEN + 1u];
     size_t key_size;
     size_t value_size;
+    bool removed;
 } _test_keyval_pair_t;
 
 
@@ -50,6 +51,7 @@ static void _generate_random_items_and_insert(hashtable_t *table, _test_keyval_p
     {
         _rand_str(pairs[i].key, &pairs[i].key_size);
         _rand_str(pairs[i].value, &pairs[i].value_size);
+        pairs[i].removed = false;
 
         TEST_ASSERT_EQUAL_INT(0, hashtable_insert(table, pairs[i].key, pairs[i].key_size,
                                                   pairs[i].value, pairs[i].value_size));
@@ -61,17 +63,96 @@ static void _verify_table_contents(hashtable_t *table, _test_keyval_pair_t *pair
 {
     for (unsigned int i = 0; i < num_items; i++)
     {
+        int key_expected = pairs[i].removed ? 0 : 1;
+
         // Verify table has key
-        TEST_ASSERT_EQUAL_INT(1, hashtable_has_key(table, pairs[i].key, pairs[i].key_size));
+        TEST_ASSERT_EQUAL_INT(key_expected, hashtable_has_key(table, pairs[i].key, pairs[i].key_size));
 
-        // Retrieve value and verify it matches what we put in
-        char value[MAX_STR_LEN + 1u];
-        size_t value_size;
+        if (1 == key_expected)
+        {
+            // Retrieve value and verify it matches what we put in
+            char value[MAX_STR_LEN + 1u];
+            size_t value_size;
 
-        TEST_ASSERT_EQUAL_INT(0, hashtable_retrieve(table, pairs[i].key, pairs[i].key_size,
+            TEST_ASSERT_EQUAL_INT(0, hashtable_retrieve(table, pairs[i].key, pairs[i].key_size,
                                                     value, &value_size));
-        TEST_ASSERT_EQUAL_INT(pairs[i].value_size, value_size);
-        TEST_ASSERT_EQUAL_INT(0, memcmp(pairs[i].value, value, value_size));
+            TEST_ASSERT_EQUAL_INT(pairs[i].value_size, value_size);
+            TEST_ASSERT_EQUAL_INT(0, memcmp(pairs[i].value, value, value_size));
+        }
+    }
+}
+
+
+static void _verify_iterated_table_contents(hashtable_t *table, _test_keyval_pair_t *pairs, unsigned int num_items,
+                                            unsigned int num_items_removed)
+{
+    char key[MAX_STR_LEN];
+    char value[MAX_STR_LEN];
+    size_t key_size;
+    size_t value_size;
+    int ret;
+
+    unsigned int entry_count = 0u;
+
+    // Reset cursor
+    TEST_ASSERT_EQUAL_INT(0, hashtable_reset_cursor(table));
+
+    while(0 == (ret = hashtable_next_item(table, key, &key_size, value, &value_size)))
+    {
+        // Find the corresponding key/value pair data in the test data array
+        _test_keyval_pair_t *test_pair = NULL;
+        for (unsigned int i = 0u; i < num_items; i++)
+        {
+            if (0 != memcmp(pairs[i].key, key, key_size))
+            {
+                // Key doesn't match, continue to next item
+                continue;
+            }
+
+            if (0 != memcmp(pairs[i].value, value, value_size))
+            {
+                // Key doesn't match, continue to next item
+                continue;
+            }
+
+            // Found matching key/value pair, break out
+            test_pair = &pairs[i];
+            break;
+        }
+
+        // Assert that we found a matching pair
+        TEST_ASSERT_FALSE(NULL == test_pair);
+
+        // Assert that it has not been removed, shouldn't be in the table if so
+        TEST_ASSERT_FALSE(test_pair->removed);
+
+        entry_count += 1u;
+    }
+
+    // Ensure we reached the limit, instead of an error occurring
+    TEST_ASSERT_EQUAL_INT(1, ret);
+
+    // Assert number of entries yielded matches expected
+    TEST_ASSERT_EQUAL_INT(num_items - num_items_removed, entry_count);
+}
+
+
+static void _remove_random_items(hashtable_t *table, _test_keyval_pair_t *pairs, unsigned int num_items,
+                                 unsigned int num_items_to_remove)
+{
+    for (unsigned int i = 0; i < num_items_to_remove; i++)
+    {
+        // Find an item that hasn't been removed yet
+        int index = _rand_range(0, num_items);
+
+        while (pairs[index].removed)
+        {
+            index = _rand_range(0, num_items);
+        }
+
+        // Remove item
+        TEST_ASSERT_EQUAL_INT(0, hashtable_remove(table, pairs[index].key, pairs[index].key_size));
+        pairs[index].removed = true;
     }
 }
 
@@ -331,18 +412,76 @@ void test_hashtable_reset_cursor_null_table(void)
 }
 
 
-// Tests that all items exist in the table and can be retrieved, after 10 items are inserted
-void test_hashtable_insert_100items(void)
+// Tests that all items exist in the table and can be retrieved, after 100 items are inserted
+void test_hashtable_insert100items(void)
 {
     hashtable_t table;
     TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
 
-    const unsigned int num_items = 10;
+    const unsigned int num_items = 100;
     _test_keyval_pair_t pairs[num_items];
 
     _generate_random_items_and_insert(&table, pairs, num_items);
 
     _verify_table_contents(&table, pairs, num_items);
+}
+
+
+// Tests that all expected items exist in the table and can be retrieved, after 100 items are inserted
+// and then 50 items are removed
+void test_hashtable_insert100items_remove50(void)
+{
+    hashtable_t table;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+
+    const unsigned int num_items = 100;
+    _test_keyval_pair_t pairs[num_items];
+
+    _generate_random_items_and_insert(&table, pairs, num_items);
+
+    _remove_random_items(&table, pairs, num_items, 50);
+
+    _verify_table_contents(&table, pairs, num_items);
+}
+
+
+// Tests that iterating through all items via hashtable_next_item yields the same
+// data as retrieving items via hashtable_retrieve, after inserting 100 items
+void test_hashtable_next_item_iterate100items(void)
+{
+    hashtable_t table;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+
+    const unsigned int num_items = 100;
+    _test_keyval_pair_t pairs[num_items];
+
+    _generate_random_items_and_insert(&table, pairs, num_items);
+
+    _verify_table_contents(&table, pairs, num_items);
+
+    _verify_iterated_table_contents(&table, pairs, num_items, 0);
+}
+
+
+// Tests that iterating through all items via hashtable_next_item yields the same
+// data as retrieving items via hashtable_retrieve, after inserting 100 items and removing 50
+void test_hashtable_next_item_iterate100items_remove50(void)
+{
+    hashtable_t table;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+
+    const unsigned int num_items = 100;
+    _test_keyval_pair_t pairs[num_items];
+
+    _generate_random_items_and_insert(&table, pairs, num_items);
+
+    _verify_table_contents(&table, pairs, num_items);
+    _verify_iterated_table_contents(&table, pairs, num_items, 0);
+
+    _remove_random_items(&table, pairs, num_items, 50);
+
+    _verify_table_contents(&table, pairs, num_items);
+    _verify_iterated_table_contents(&table, pairs, num_items, 50);
 }
 
 
@@ -377,7 +516,10 @@ int main(void)
     RUN_TEST(test_hashtable_reset_cursor_null_table);
 
     // Woohoo now the more fun tests
-    RUN_TEST(test_hashtable_insert_100items);
+    RUN_TEST(test_hashtable_insert100items);
+    RUN_TEST(test_hashtable_insert100items_remove50);
+    RUN_TEST(test_hashtable_next_item_iterate100items);
+    RUN_TEST(test_hashtable_next_item_iterate100items_remove50);
 
     return UNITY_END();
 }
