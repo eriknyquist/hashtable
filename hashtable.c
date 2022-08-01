@@ -299,14 +299,14 @@ static int _setup_new_table(hashtable_t *table, uint32_t array_count, void *buff
     td->list_table = (_keyval_pair_list_table_t *) (u8_ret + sizeof(_keyval_pair_table_data_t));
     td->data_block = (_keyval_pair_data_block_t *) (u8_ret + sizeof(_keyval_pair_table_data_t) + array_size);
 
+    // NULL-ify all the array entries
+    (void) memset(td->list_table, 0, array_size);
+
     // Initialize cursor values
     td->cursor_array_index = 0u;
     td->cursor_items_traversed = 0u;
     td->cursor_item = td->list_table->table[0].head;
     td->cursor_limit = 0u;
-
-    // NULL-ify all the array entries
-    (void) memset(td->list_table, 0, array_size);
 
     td->list_table->array_count = array_count;
 
