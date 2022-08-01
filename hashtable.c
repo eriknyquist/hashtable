@@ -453,6 +453,7 @@ static int _insert_keyval_pair(hashtable_t *table, const void *key, const size_t
         {
             // New value is the same size or smaller than existing, easy/quick update
             (void) memcpy(pair->data + pair->key_size, value, value_size);
+            pair->value_size = value_size;
             return 0;
         }
         else
