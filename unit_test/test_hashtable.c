@@ -86,8 +86,8 @@ static void _verify_table_contents(hashtable_t *table, _test_keyval_pair_t *pair
 static void _verify_iterated_table_contents(hashtable_t *table, _test_keyval_pair_t *pairs, unsigned int num_items,
                                             unsigned int num_items_removed)
 {
-    char key[MAX_STR_LEN];
-    char value[MAX_STR_LEN];
+    char key[MAX_STR_LEN + 1];
+    char value[MAX_STR_LEN + 1];
     size_t key_size;
     size_t value_size;
     int ret;
@@ -487,7 +487,7 @@ void test_hashtable_next_item_iterate1000items_remove500(void)
 
 // Tests that the value reported by hashtable_bytes_remaining does not change
 // after inserting the same 1000 items that were previously inserted and removed
-void test_bytes_remaining_unchanged_after_reinserting_removed_items(void)
+void test_hashtable_bytes_remaining_unchanged_after_reinserting_removed_items(void)
 {
     hashtable_t table;
     TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
@@ -539,8 +539,8 @@ void test_hashtable_bytes_remaining_overwrite_samesizevalue(void)
     size_t bytes_remaining_1 = 0u;
     TEST_ASSERT_EQUAL_INT(0, hashtable_bytes_remaining(&table, &bytes_remaining_1));
 
-    char key[MAX_STR_LEN];
-    char value1[MAX_STR_LEN];
+    char key[MAX_STR_LEN + 1];
+    char value1[MAX_STR_LEN + 1];
     size_t key_size = 0u;
     size_t value1_size = 0u;
 
@@ -559,7 +559,7 @@ void test_hashtable_bytes_remaining_overwrite_samesizevalue(void)
 
     // Generate a new value (all 0xff this time) and insert it with the same key,
     // just has to be the same size as the original value
-    char value2[MAX_STR_LEN];
+    char value2[MAX_STR_LEN + 1];
     (void) memset(value2, 0xff, sizeof(value2));
     size_t value2_size = value1_size;
 
@@ -573,7 +573,116 @@ void test_hashtable_bytes_remaining_overwrite_samesizevalue(void)
     TEST_ASSERT_EQUAL_INT(bytes_remaining_2, bytes_remaining_3);
 
     // Retrieve item and verify value matches new value
-    char read_value[MAX_STR_LEN];
+    char read_value[MAX_STR_LEN + 1];
+    size_t read_size = 0u;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_retrieve(&table, key, key_size, read_value, &read_size));
+
+    TEST_ASSERT_EQUAL_INT(value2_size, read_size);
+    TEST_ASSERT_EQUAL_INT(0, memcmp(value2, read_value, read_size));
+}
+
+
+// Tests that the value reported by hashtable_bytes_remaining does not change after
+// overwriting an existing key with a value of a smaller size
+void test_hashtable_bytes_remaining_overwrite_smallervalue(void)
+{
+    hashtable_t table;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+
+    // Get bytes remaining before inserting anything
+    size_t bytes_remaining_1 = 0u;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_bytes_remaining(&table, &bytes_remaining_1));
+
+    char key[MAX_STR_LEN + 1];
+    char value1[MAX_STR_LEN + 1];
+    size_t key_size = 0u;
+    size_t value1_size = 0u;
+
+    // Generate initial key/value pair and insert it
+    _rand_str(key, &key_size);
+    _rand_str(value1, &value1_size);
+
+    TEST_ASSERT_EQUAL_INT(0, hashtable_insert(&table, key, key_size, value1, value1_size));
+    TEST_ASSERT_EQUAL_INT(1u, table.entry_count);
+
+    size_t bytes_remaining_2 = 0u;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_bytes_remaining(&table, &bytes_remaining_2));
+
+    // Should be fewer bytes remaining after inserting first item
+    TEST_ASSERT_TRUE(bytes_remaining_2 < bytes_remaining_1);
+
+    // Generate a new value (all 0xff this time) and insert it with the same key,
+    // just has to be the same size as the original value
+    char value2[MAX_STR_LEN + 1];
+    (void) memset(value2, 0xff, sizeof(value2));
+    size_t value2_size = value1_size - 1u;
+
+    TEST_ASSERT_EQUAL_INT(0, hashtable_insert(&table, key, key_size, value2, value2_size));
+    TEST_ASSERT_EQUAL_INT(1u, table.entry_count);
+
+    size_t bytes_remaining_3 = 0u;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_bytes_remaining(&table, &bytes_remaining_3));
+
+    // Bytes remaining should be unchanged, since the new value was smaller and can fit in the old slot
+    TEST_ASSERT_EQUAL_INT(bytes_remaining_2, bytes_remaining_3);
+
+    // Retrieve item and verify value matches new value
+    char read_value[MAX_STR_LEN + 1];
+    size_t read_size = 0u;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_retrieve(&table, key, key_size, read_value, &read_size));
+
+    TEST_ASSERT_EQUAL_INT(value2_size, read_size);
+    TEST_ASSERT_EQUAL_INT(0, memcmp(value2, read_value, read_size));
+}
+
+
+// Tests that the value reported by hashtable_bytes_remaining decreases after
+// overwriting an existing key with a value of a larger size
+void test_hashtable_bytes_remaining_overwrite_largervalue(void)
+{
+    hashtable_t table;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+
+    // Get bytes remaining before inserting anything
+    size_t bytes_remaining_1 = 0u;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_bytes_remaining(&table, &bytes_remaining_1));
+
+    char key[MAX_STR_LEN + 1];
+    char value1[MAX_STR_LEN + 1];
+    size_t key_size = 5u;
+    size_t value1_size = 5u;
+
+    // Generate initial key/value pair and insert it
+    (void) memset(key, 0xaa, key_size);
+    (void) memset(value1, 0xbb, value1_size);
+
+    TEST_ASSERT_EQUAL_INT(0, hashtable_insert(&table, key, key_size, value1, value1_size));
+    TEST_ASSERT_EQUAL_INT(1u, table.entry_count);
+
+    size_t bytes_remaining_2 = 0u;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_bytes_remaining(&table, &bytes_remaining_2));
+
+    // Should be fewer bytes remaining after inserting first item
+    TEST_ASSERT_TRUE(bytes_remaining_2 < bytes_remaining_1);
+
+    // Generate a new value (all 0xff this time) and insert it with the same key,
+    // just has to be the same size as the original value
+    char value2[MAX_STR_LEN + 1];
+    size_t value2_size = value1_size + 1;
+
+    (void) memset(value2, 0xff, sizeof(value2_size));
+
+    TEST_ASSERT_EQUAL_INT(0, hashtable_insert(&table, key, key_size, value2, value2_size));
+    TEST_ASSERT_EQUAL_INT(1u, table.entry_count);
+
+    size_t bytes_remaining_3 = 0u;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_bytes_remaining(&table, &bytes_remaining_3));
+
+    // Bytes remaining should be decreased, since the new value was larger
+    TEST_ASSERT_TRUE(bytes_remaining_3 < bytes_remaining_2);
+
+    // Retrieve item and verify value matches new value
+    char read_value[MAX_STR_LEN + 1];
     size_t read_size = 0u;
     TEST_ASSERT_EQUAL_INT(0, hashtable_retrieve(&table, key, key_size, read_value, &read_size));
 
@@ -617,8 +726,10 @@ int main(void)
     RUN_TEST(test_hashtable_insert1000items_remove500);
     RUN_TEST(test_hashtable_next_item_iterate1000items);
     RUN_TEST(test_hashtable_next_item_iterate1000items_remove500);
-    RUN_TEST(test_bytes_remaining_unchanged_after_reinserting_removed_items);
+    RUN_TEST(test_hashtable_bytes_remaining_unchanged_after_reinserting_removed_items);
     RUN_TEST(test_hashtable_bytes_remaining_overwrite_samesizevalue);
+    RUN_TEST(test_hashtable_bytes_remaining_overwrite_smallervalue);
+    RUN_TEST(test_hashtable_bytes_remaining_overwrite_largervalue);
 
     return UNITY_END();
 }
