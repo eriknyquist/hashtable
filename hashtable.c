@@ -146,7 +146,7 @@ static hashtable_config_t _default_config = {_default_hash, 64u};
 
 
 /**
- * Calculate a has for the given key data, and return a pointer to the list at the
+ * Calculate a hash for the given key data, and return a pointer to the list at the
  * corresponding table index, such that 'table_index := hash (mod) max_array_count'
  *
  * @param table     Pointer to hashtable instance
