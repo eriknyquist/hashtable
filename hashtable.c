@@ -392,6 +392,8 @@ static int _remove_from_table(hashtable_t *table, _keyval_pair_list_t *list,
         prev->next = item->next;
     }
 
+    item->next = NULL;
+
     // Add item to free list
     _keyval_pair_table_data_t *td = (_keyval_pair_table_data_t *) table->table_data;
     _keyval_pair_list_t *freelist = &td->data_block->freelist;
