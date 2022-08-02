@@ -315,7 +315,7 @@ static int _setup_new_table(hashtable_t *table, uint32_t array_count, void *buff
     // Initialize key/pair value data block
     td->data_block->freelist.head = NULL;
     td->data_block->freelist.tail = NULL;
-    td->data_block->total_bytes = buffer_size - min_required_size;
+    td->data_block->total_bytes = buffer_size - (min_required_size - MIN_REQUIRED_DATA_SIZE);
     td->data_block->bytes_used = 0u;
 
     return 0;
@@ -481,6 +481,7 @@ static int _insert_keyval_pair(hashtable_t *table, const void *key, const hashta
     pair = _store_keyval_pair(table, key, key_size, value, value_size);
     if (NULL == pair)
     {
+        ERROR("No space in buffer to insert new item");
         return -1;
     }
 
