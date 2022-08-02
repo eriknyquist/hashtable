@@ -113,6 +113,7 @@ typedef struct
 {
     hashtable_config_t config;    ///< Hashtable config data
     uint32_t entry_count;         ///< Number of entries in the table
+    uint32_t array_slots_used;    ///< Number of array slots with one or more items in the list
     size_t data_size;             ///< Size of data section
     void *table_data;             ///< Pointer to buffer for data section
 } hashtable_t;
@@ -202,7 +203,7 @@ int hashtable_has_key(hashtable_t *table, const void *key, const hashtable_size_
  * @return   0 if successful, -1 if an error occurred. Use #hashtable_error_message
  *           to get an error message.
  */
-int hashtable_bytes_remaining(hashtable_t *table, hashtable_size_t *bytes_remaining);
+int hashtable_bytes_remaining(hashtable_t *table, size_t *bytes_remaining);
 
 
 /**

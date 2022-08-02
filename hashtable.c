@@ -397,6 +397,12 @@ static int _remove_from_table(hashtable_t *table, _keyval_pair_list_t *list,
 
     item->next = NULL;
 
+    // Is the list empty now?
+    if (list->head == NULL)
+    {
+        table->array_slots_used -= 1u;
+    }
+
     // Add item to free list
     _keyval_pair_table_data_t *td = (_keyval_pair_table_data_t *) table->table_data;
     _keyval_pair_list_t *freelist = &td->data_block->freelist;
@@ -481,8 +487,10 @@ static int _insert_keyval_pair(hashtable_t *table, const void *key, const hashta
     // Add new key/val pair into the list at the current slot in the table
     if (NULL == list->head)
     {
+        // First item in this slot
         list->head = pair;
         list->tail = pair;
+        table->array_slots_used += 1u;
     }
     else
     {
@@ -530,6 +538,7 @@ int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
         return -1;
     }
 
+    table->array_slots_used = 0u;
     table->entry_count = 0u;
     table->table_data = buffer;
     return 0;
