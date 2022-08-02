@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['hash_0',['hash',['../structhashtable__config__t.html#a06df355ea00ced7da343f11aea23e36f',1,'hashtable_config_t']]]
+  ['entry_5fcount_0',['entry_count',['../structhashtable__t.html#a3dc4a946903f00c879c3efc192e429a3',1,'hashtable_t']]]
 ];
