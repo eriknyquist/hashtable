@@ -24,7 +24,37 @@
  *   items will fail.
  * - Provide/write your own hash function (although a default hash function, optimized
  *   for ASCII strings, is provided).
+ *
+ * \section buildopts_sec Build/compile options
+ *
+ * There are a number of preprocessor symbols you can define to change certain things,
+ * here are the details about those symbols.
+ *
+ * \subsection ht_size_sec Datatype used for key/value sizes
+ *
+ *  By default, <code>size_t</code> is used to hold the sizes of keys/values. If you
+ *  know that all your keys/values are below a certain size, however, and you want to save
+ *  some memory, then you can define one of the following options to set the datatype used
+ *  to hold key/value sizes:
+ *
+ *  Symbol name                          | Effect
+ *  -------------------------------------|-------------------------------------------
+ *  <code>HASHTABLE_SIZE_T_UINT16</code> | hashtable_size_t is <code>uint16_t</code>
+ *  <code>HASHTABLE_SIZE_T_UINT32</code> | hashtable_size_t is <code>uint32_t</code>
+ *  <code>HASHTABLE_SIZE_T_SYS</code>    | hashtable_size_t is <code>size_t</code> <b>(default)</b>
+ *
+ * \subsection disable_paramval_sec Disable function parameter validation
+ *
+ *  By default, all function parameters are checked for validity (e.g. no NULL pointers,
+ *  no size values of 0). However, if you have a stable system and have worked most of
+ *  those types of bugs out, then you may want to compile these checks out for a performance gain.
+ *  Define the following option to compile out all function parameter validation checks:
+ *
+ *  Symbol name                                     | Effect
+ *  ------------------------------------------------|---------------------------------------------------
+ *  <code>HASHTABLE_DISABLE_PARAM_VALIDATION</code> | All function param. validation checks compiled out
  */
+
 
 /**
  * @file hashtable_api.h
@@ -41,6 +71,22 @@
 #include <stdint.h>
 
 
+#if !defined(HASHTABLE_SIZE_T_UINT16) && !defined(HASHTABLE_SIZE_T_UINT32) && !defined(HASHTABLE_SIZE_T_SYS)
+#define HASHTABLE_SIZE_T_SYS
+#endif // if !defined..
+
+
+#if defined(HASHTABLE_SIZE_T_UINT16)
+typedef uint16_t hashtable_size_t;
+#elif defined(HASHTABLE_SIZE_T_UINT32)
+typedef uint32_t hashtable_size_t;
+#elif defined(HASHTABLE_SIZE_T_SYS)
+typedef size_t hashtable_size_t;
+#else
+#error("HASHTABLE_SIZE_T option not defined")
+#endif // if defined....
+
+
 /**
  * @brief Configuration data for a single hashtable instance
  */
@@ -54,7 +100,7 @@ typedef struct
      *
      * @return  Computed hash value
      */
-    uint32_t (*hash)(const void *data, const size_t size);
+    uint32_t (*hash)(const void *data, const hashtable_size_t size);
 
     uint32_t initial_array_count; ///< Number of table array slots
 } hashtable_config_t;
@@ -100,8 +146,8 @@ int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
  * @return   0 if successful, -1 if an error occurred. Use #hashtable_error_message
  *           to get an error message.
  */
-int hashtable_insert(hashtable_t *table, const void *key, const size_t key_size,
-                     const void *value, const size_t value_size);
+int hashtable_insert(hashtable_t *table, const void *key, const hashtable_size_t key_size,
+                     const void *value, const hashtable_size_t value_size);
 
 
 /**
@@ -115,7 +161,7 @@ int hashtable_insert(hashtable_t *table, const void *key, const size_t key_size,
  * @return   0 if successful, -1 if an error occurred. Use #hashtable_error_message
  *           to get an error message.
  */
-int hashtable_remove(hashtable_t *table, const void *key, const size_t key_size);
+int hashtable_remove(hashtable_t *table, const void *key, const hashtable_size_t key_size);
 
 
 /**
@@ -130,8 +176,8 @@ int hashtable_remove(hashtable_t *table, const void *key, const size_t key_size)
  * @return   0 if successful, -1 if an error occurred. Use #hashtable_error_message
  *           to get an error message.
  */
-int hashtable_retrieve(hashtable_t *table, const void *key, const size_t key_size,
-                       void *value, size_t *value_size);
+int hashtable_retrieve(hashtable_t *table, const void *key, const hashtable_size_t key_size,
+                       void *value, hashtable_size_t *value_size);
 
 
 /**
@@ -144,7 +190,7 @@ int hashtable_retrieve(hashtable_t *table, const void *key, const size_t key_siz
  * @return   1 if key exists, 0 if key does not exist, and -1 if an error occurred.
  *           Use #hashtable_error_message to get an error message.
  */
-int hashtable_has_key(hashtable_t *table, const void *key, const size_t key_size);
+int hashtable_has_key(hashtable_t *table, const void *key, const hashtable_size_t key_size);
 
 
 /**
@@ -156,7 +202,7 @@ int hashtable_has_key(hashtable_t *table, const void *key, const size_t key_size
  * @return   0 if successful, -1 if an error occurred. Use #hashtable_error_message
  *           to get an error message.
  */
-int hashtable_bytes_remaining(hashtable_t *table, size_t *bytes_remaining);
+int hashtable_bytes_remaining(hashtable_t *table, hashtable_size_t *bytes_remaining);
 
 
 /**
@@ -175,8 +221,8 @@ int hashtable_bytes_remaining(hashtable_t *table, size_t *bytes_remaining);
              and -1 if an error occurred. Use #hashtable_error_message to get an error
              message.
  */
-int hashtable_next_item(hashtable_t *table, void *key, size_t *key_size,
-                        void *value, size_t *value_size);
+int hashtable_next_item(hashtable_t *table, void *key, hashtable_size_t *key_size,
+                        void *value, hashtable_size_t *value_size);
 
 
 /**

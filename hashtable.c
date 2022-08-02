@@ -43,8 +43,8 @@
 typedef struct _keyval_pair
 {
     struct _keyval_pair *next;    ///< Pointer to next key/val pair in the list
-    size_t key_size;              ///< Size of key data in bytes
-    size_t value_size;            ///< Size of value data in bytes
+    hashtable_size_t key_size;    ///< Size of key data in bytes
+    hashtable_size_t value_size;  ///< Size of value data in bytes
     uint8_t data[];               ///< Start of key + value data packed together
 } _keyval_pair_t;
 
@@ -127,13 +127,13 @@ static char _error_msg[MAX_ERROR_MSG_SIZE]  = {'\0'};
 
 
 // Default hash function
-static uint32_t _default_hash(const void *data, const size_t size)
+static uint32_t _default_hash(const void *data, const hashtable_size_t size)
 {
     static const uint32_t magic_multiplier = 37u;
     uint8_t *u8_data = (uint8_t *) data;
     uint32_t ret = 0u;
 
-    for (size_t i = 0u; i < size; i++)
+    for (hashtable_size_t i = 0u; i < size; i++)
     {
         ret = magic_multiplier * ret + u8_data[i];
     }
@@ -156,7 +156,8 @@ static hashtable_config_t _default_config = {_default_hash, 64u};
  *
  * @return Pointer to list at corresponding table index
  */
-static _keyval_pair_list_t *_get_table_list_by_key(hashtable_t *table, const void *key, const size_t key_size)
+static _keyval_pair_list_t *_get_table_list_by_key(hashtable_t *table, const void *key,
+                                                   const hashtable_size_t key_size)
 {
     uint32_t hash = table->config.hash(key, key_size);
 
@@ -233,8 +234,8 @@ static _keyval_pair_t *_search_free_list(hashtable_t *table, size_t size_require
  *
  * @return Pointer to stored key/value pair, or NULL if there was not sufficient space to store
  */
-static _keyval_pair_t *_store_keyval_pair(hashtable_t *table, const void *key, const size_t key_size,
-                                          const void *value, const size_t value_size)
+static _keyval_pair_t *_store_keyval_pair(hashtable_t *table, const void *key, const hashtable_size_t key_size,
+                                          const void *value, const hashtable_size_t value_size)
 {
     _keyval_pair_t *ret = NULL;
     size_t size_required = sizeof(_keyval_pair_t) + key_size + value_size;
@@ -336,7 +337,8 @@ static int _setup_new_table(hashtable_t *table, uint32_t array_count, void *buff
  * @return Pointer to key/val pair with matching key data, or NULL if none was found
  */
 static _keyval_pair_t *_search_list_by_key(hashtable_t *table, _keyval_pair_list_t *list,
-                                           const void *key, const size_t key_size, _keyval_pair_t **previous)
+                                           const void *key, const hashtable_size_t key_size,
+                                           _keyval_pair_t **previous)
 {
     _keyval_pair_t *curr = list->head;
     _keyval_pair_t *prev = NULL;
@@ -442,8 +444,8 @@ static int _remove_from_table(hashtable_t *table, _keyval_pair_list_t *list,
  *
  * @return 0 if successful, -1 if enough space was not available
  */
-static int _insert_keyval_pair(hashtable_t *table, const void *key, const size_t key_size,
-                               const void *value, const size_t value_size)
+static int _insert_keyval_pair(hashtable_t *table, const void *key, const hashtable_size_t key_size,
+                               const void *value, const hashtable_size_t value_size)
 {
     _keyval_pair_list_t *list = _get_table_list_by_key(table, key, key_size);
 
@@ -501,6 +503,7 @@ static int _insert_keyval_pair(hashtable_t *table, const void *key, const size_t
 int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
                      void *buffer, size_t buffer_size)
 {
+#ifndef HASHTABLE_DISABLE_PARAM_VALIDATION
     if ((NULL == table) || (NULL == config))
     {
         ERROR("NULL pointer passed to function");
@@ -518,6 +521,7 @@ int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
         ERROR("Zero array count in hashtable_config_t");
         return -1;
     }
+#endif // HASHTABLE_DISABLE_PARAM_VALIDATION
 
     (void) memcpy(&table->config, config, sizeof(table->config));
 
@@ -535,9 +539,10 @@ int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
 /**
  * @see hashtable_api.h
  */
-int hashtable_insert(hashtable_t *table, const void *key, const size_t key_size,
-                     const void *value, const size_t value_size)
+int hashtable_insert(hashtable_t *table, const void *key, const hashtable_size_t key_size,
+                     const void *value, const hashtable_size_t value_size)
 {
+#ifndef HASHTABLE_DISABLE_PARAM_VALIDATION
     if ((NULL == table) || (NULL == key) || (NULL == value))
     {
         ERROR("NULL pointer passed to function");
@@ -549,6 +554,7 @@ int hashtable_insert(hashtable_t *table, const void *key, const size_t key_size,
         ERROR("Invalid size value passed to function");
         return -1;
     }
+#endif // HASHTABLE_DISABLE_PARAM_VALIDATION
 
     return _insert_keyval_pair(table, key, key_size, value, value_size);
 }
@@ -557,8 +563,9 @@ int hashtable_insert(hashtable_t *table, const void *key, const size_t key_size,
 /**
  * @see hashtable_api.h
  */
-int hashtable_remove(hashtable_t *table, const void *key, const size_t key_size)
+int hashtable_remove(hashtable_t *table, const void *key, const hashtable_size_t key_size)
 {
+#ifndef HASHTABLE_DISABLE_PARAM_VALIDATION
     if ((NULL == table) || (NULL == key))
     {
         ERROR("NULL pointer passed to function");
@@ -570,6 +577,7 @@ int hashtable_remove(hashtable_t *table, const void *key, const size_t key_size)
         ERROR("Invalid size value passed to function");
         return -1;
     }
+#endif // HASHTABLE_DISABLE_PARAM_VALIDATION
 
     _keyval_pair_list_t *list = _get_table_list_by_key(table, key, key_size);
 
@@ -588,14 +596,16 @@ int hashtable_remove(hashtable_t *table, const void *key, const size_t key_size)
 /**
  * @see hashtable_api.h
  */
-int hashtable_retrieve(hashtable_t *table, const void *key, const size_t key_size,
-                       void *value, size_t *value_size)
+int hashtable_retrieve(hashtable_t *table, const void *key, const hashtable_size_t key_size,
+                       void *value, hashtable_size_t *value_size)
 {
+#ifndef HASHTABLE_DISABLE_PARAM_VALIDATION
     if ((NULL == table) || (NULL == key) || (NULL == value))
     {
         ERROR("NULL pointer passed to function");
         return -1;
     }
+#endif // HASHTABLE_DISABLE_PARAM_VALIDATION
 
     _keyval_pair_list_t *list = _get_table_list_by_key(table, key, key_size);
 
@@ -621,13 +631,15 @@ int hashtable_retrieve(hashtable_t *table, const void *key, const size_t key_siz
 /**
  * @see hashtable_api.h
  */
-int hashtable_has_key(hashtable_t *table, const void *key, const size_t key_size)
+int hashtable_has_key(hashtable_t *table, const void *key, const hashtable_size_t key_size)
 {
+#ifndef HASHTABLE_DISABLE_PARAM_VALIDATION
     if ((NULL == table) || (NULL == key))
     {
         ERROR("NULL pointer passed to function");
         return -1;
     }
+#endif // HASHTABLE_DISABLE_PARAM_VALIDATION
 
     _keyval_pair_list_t *list = _get_table_list_by_key(table, key, key_size);
 
@@ -647,12 +659,13 @@ int hashtable_has_key(hashtable_t *table, const void *key, const size_t key_size
  */
 int hashtable_bytes_remaining(hashtable_t *table, size_t *bytes_remaining)
 {
+#ifndef HASHTABLE_DISABLE_PARAM_VALIDATION
     if ((NULL == table) || (NULL == bytes_remaining))
     {
         ERROR("NULL pointer passed to function");
         return -1;
     }
-
+#endif // HASHTABLE_DISABLE_PARAM_VALIDATION
 
     _keyval_pair_table_data_t *td = (_keyval_pair_table_data_t *) table->table_data;
     *bytes_remaining = td->data_block->total_bytes - td->data_block->bytes_used;
@@ -664,14 +677,16 @@ int hashtable_bytes_remaining(hashtable_t *table, size_t *bytes_remaining)
 /**
  * @see hashtable_api.h
  */
-int hashtable_next_item(hashtable_t *table, void *key, size_t *key_size,
-                        void *value, size_t *value_size)
+int hashtable_next_item(hashtable_t *table, void *key, hashtable_size_t *key_size,
+                        void *value, hashtable_size_t *value_size)
 {
+#ifndef HASHTABLE_DISABLE_PARAM_VALIDATION
     if ((NULL == table) || (NULL == key) || (NULL == value))
     {
         ERROR("NULL pointer passed to function");
         return -1;
     }
+#endif // HASHTABLE_DISABLE_PARAM_VALIDATION
 
     _keyval_pair_table_data_t *td = (_keyval_pair_table_data_t *) table->table_data;
 
@@ -735,11 +750,13 @@ int hashtable_next_item(hashtable_t *table, void *key, size_t *key_size,
  */
 int hashtable_reset_cursor(hashtable_t *table)
 {
+#ifndef HASHTABLE_DISABLE_PARAM_VALIDATION
     if (NULL == table)
     {
         ERROR("NULL pointer passed to function");
         return -1;
     }
+#endif // HASHTABLE_DISABLE_PARAM_VALIDATION
 
     _keyval_pair_table_data_t *td = (_keyval_pair_table_data_t *) table->table_data;
     td->cursor_array_index = 0u;
