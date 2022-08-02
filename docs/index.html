@@ -78,8 +78,33 @@ Features/limitations</h1>
 <li>Uses <a href="https://en.wikipedia.org/wiki/Hash_table#Separate_chaining">separate chaining</a> to resolve collisions.</li>
 <li>Keys and values are byte streams of arbitrary length/contents, so keys and values can be any data type.</li>
 <li>No dynamic memory allocation, and no table re-sizing. All table data is stored in a buffer that must be provided by the caller on hashtable creation, and when there is not enough space remaining in that buffer, insertion of new items will fail.</li>
-<li>Provide/write your own hash function (although a default hash function, optimized for ASCII strings, is provided). </li>
+<li>Provide/write your own hash function (although a default hash function, optimized for ASCII strings, is provided).</li>
 </ul>
+<h1><a class="anchor" id="buildopts_sec"></a>
+Build/compile options</h1>
+<p >There are a number of preprocessor symbols you can define to change certain things, here are the details about those symbols.</p>
+<h2><a class="anchor" id="ht_size_sec"></a>
+Datatype used for key/value sizes</h2>
+<p >By default, <code>size_t</code> is used to hold the sizes of keys/values. If you know that all your keys/values are below a certain size, however, and you want to save some memory, then you can define one of the following options to set the datatype used to hold key/value sizes:</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Symbol name   </th><th class="markdownTableHeadNone">Effect    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>HASHTABLE_SIZE_T_UINT16</code>   </td><td class="markdownTableBodyNone">hashtable_size_t is <code>uint16_t</code>    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>HASHTABLE_SIZE_T_UINT32</code>   </td><td class="markdownTableBodyNone">hashtable_size_t is <code>uint32_t</code>    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>HASHTABLE_SIZE_T_SYS</code>   </td><td class="markdownTableBodyNone">hashtable_size_t is <code>size_t</code> <b>(default)</b>   </td></tr>
+</table>
+<h2><a class="anchor" id="disable_paramval_sec"></a>
+Disable function parameter validation</h2>
+<p >By default, all function parameters are checked for validity (e.g. no NULL pointers, no size values of 0). However, if you have a stable system and have worked most of those types of bugs out, then you may want to compile these checks out for a performance gain. Define the following option to compile out all function parameter validation checks:</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Symbol name   </th><th class="markdownTableHeadNone">Effect    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>HASHTABLE_DISABLE_PARAM_VALIDATION</code>   </td><td class="markdownTableBodyNone">All function param. validation checks compiled out   </td></tr>
+</table>
 </div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->
