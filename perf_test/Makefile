@@ -25,7 +25,7 @@ TEST_PROG := $(OUTPUT_DIR)/perf_test
 
 SRC_FILES := perf_test.c ../hashtable.c
 INCLUDES := -Iunity/src -I../
-CFLAGS := -Wall -pedantic -std=c99 -DHASHTABLE_SIZE_T_SYS
+CFLAGS := -Wall -pedantic -std=c99 -DHASHTABLE_SIZE_T_UINT16
 
 .PHONY: clean test
 

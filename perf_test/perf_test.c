@@ -144,9 +144,9 @@ static int _rand_range(int lower, int upper)
 }
 
 
-static void _rand_str(char *output, size_t *num_chars)
+static void _rand_str(char *output, hashtable_size_t *num_chars)
 {
-    *num_chars = (size_t) _rand_range(MIN_STR_LEN, MAX_STR_LEN);
+    *num_chars = (hashtable_size_t) _rand_range(MIN_STR_LEN, MAX_STR_LEN);
 
     for (unsigned int i = 0; i < *num_chars; i++)
     {

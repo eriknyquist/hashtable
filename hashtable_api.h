@@ -14,7 +14,7 @@
  *
  * \section features_sec Features/limitations
  *
- * - Implemented in pure C99, and requires only <code>stdint.h</code> and <code>string.h</code>.
+ * - Implemented in pure C99, and requires only `stdint.h` and `string.h`.
  * - Uses <a href="https://en.wikipedia.org/wiki/Hash_table#Separate_chaining">separate chaining</a> to resolve collisions.
  * - Keys and values are byte streams of arbitrary length/contents, so keys and values can
  *   be any data type.
@@ -32,16 +32,16 @@
  *
  * \subsection ht_size_sec Datatype used for key/value sizes
  *
- *  By default, <code>size_t</code> is used to hold the sizes of keys/values. If you
+ *  By default, `size_t` is used to hold the sizes of keys/values. If you
  *  know that all your keys/values are below a certain size, however, and you want to save
  *  some memory, then you can define one of the following options to set the datatype used
  *  to hold key/value sizes:
  *
  *  Symbol name                          | Effect
  *  -------------------------------------|-------------------------------------------
- *  <code>HASHTABLE_SIZE_T_UINT16</code> | hashtable_size_t is <code>uint16_t</code>
- *  <code>HASHTABLE_SIZE_T_UINT32</code> | hashtable_size_t is <code>uint32_t</code>
- *  <code>HASHTABLE_SIZE_T_SYS</code>    | hashtable_size_t is <code>size_t</code> <b>(default)</b>
+ *  `HASHTABLE_SIZE_T_UINT16` | hashtable_size_t is `uint16_t`
+ *  `HASHTABLE_SIZE_T_UINT32` | hashtable_size_t is `uint32_t`
+ *  `HASHTABLE_SIZE_T_SYS`    | hashtable_size_t is `size_t` <b>(default)</b>
  *
  * \subsection disable_paramval_sec Disable function parameter validation
  *
@@ -50,9 +50,18 @@
  *  those types of bugs out, then you may want to compile these checks out for a performance gain.
  *  Define the following option to compile out all function parameter validation checks:
  *
- *  Symbol name                                     | Effect
- *  ------------------------------------------------|---------------------------------------------------
- *  <code>HASHTABLE_DISABLE_PARAM_VALIDATION</code> | All function param. validation checks compiled out
+ *  Symbol name                          | Effect
+ *  -------------------------------------|---------------------------------------------------
+ *  `HASHTABLE_DISABLE_PARAM_VALIDATION` | All function param. validation checks compiled out
+ *
+ * \subsection packed_struct_sec Enable packed struct option
+ *
+ *  Use `__attribute__((packed))` for key/value pair struct definition, may save
+ *  some extra space for stored key/value pair data:
+ *
+ *  Symbol name               | Effect
+ *  --------------------------|-----------------------------------------------------
+ *  `HASHTABLE_PACKED_STRUCT` | Key/value pair struct uses `__attribute__((packed))`
  */
 
 

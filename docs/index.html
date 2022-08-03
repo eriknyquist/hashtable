@@ -105,6 +105,15 @@ Disable function parameter validation</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code>HASHTABLE_DISABLE_PARAM_VALIDATION</code>   </td><td class="markdownTableBodyNone">All function param. validation checks compiled out   </td></tr>
 </table>
+<h2><a class="anchor" id="packed_struct_sec"></a>
+Enable packed struct option</h2>
+<p >Use <code>__attribute__((packed))</code> for key/value pair struct definition, may save some extra space for stored key/value pair data:</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Symbol name   </th><th class="markdownTableHeadNone">Effect    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>HASHTABLE_PACKED_STRUCT</code>   </td><td class="markdownTableBodyNone">Key/value pair struct uses <code>__attribute__((packed))</code>   </td></tr>
+</table>
 </div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->

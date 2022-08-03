@@ -36,9 +36,16 @@
     (((array_count) * sizeof(_keyval_pair_list_t)) + sizeof(_keyval_pair_list_table_t))
 
 
+#ifdef HASHTABLE_PACKED_STRUCT
+#define _HASHTABLE_PACKED __attribute__((packed))
+#else
+#define _HASHTABLE_PACKED
+#endif // HASHTABLE_PACKED_STRUCT
+
+
 /**
- * Holds information about a single key/value pair stored in the table.
- * Also represents a single node in a single-linked list of key/value pairs.
+ * Represents a single key/value pair stored in the data block area of a table instance.
+ * Also represents a single node in a singly-linked list of key/value pairs.
  */
 typedef struct _keyval_pair
 {
@@ -46,7 +53,7 @@ typedef struct _keyval_pair
     hashtable_size_t key_size;    ///< Size of key data in bytes
     hashtable_size_t value_size;  ///< Size of value data in bytes
     uint8_t data[];               ///< Start of key + value data packed together
-} _keyval_pair_t;
+} _HASHTABLE_PACKED _keyval_pair_t;
 
 
 /**
