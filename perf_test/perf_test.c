@@ -7,11 +7,11 @@
 
 #include "hashtable_api.h"
 
+// Size of statically-allocated buffer passed to hashtable_create
+#define BUFFER_SIZE (1024 * 1024 * 400)
 
-#define BUFFER_SIZE (1024 * 1024 * 100) // 10MB
-
-#define MAX_LOG_MSG_SIZE (256u)       // Log messages printed to stdout can't be larger than this
-
+// Log messages printed to stdout can't be larger than this
+#define MAX_LOG_MSG_SIZE (256u)
 
 // Min. size of a randomly-generated key or value
 #define MIN_STR_LEN (16u)
@@ -20,10 +20,10 @@
 #define MAX_STR_LEN (32u)
 
 // Number of randomly-generated items to insert into table
-#define ITEM_INSERT_COUNT (1000000u)
+#define ITEM_INSERT_COUNT (5000000u)
 
 // Number of slots in the hashtable
-#define INITIAL_ARRAY_COUNT (100000u)
+#define INITIAL_ARRAY_COUNT (1000000u)
 
 
 #if defined(_WIN32)
@@ -198,8 +198,11 @@ int main(void)
     char rmsize_buf[32];
     (void) sizesprint(bytes_available, rmsize_buf, sizeof(rmsize_buf));
 
-    _log("Total buffer size is %s, %s remaining for key/value pair data\n",
-         bufsize_buf, rmsize_buf);
+    char tablesize_buf[32];
+    (void) sizesprint(sizeof(_buffer) - bytes_available, tablesize_buf, sizeof(tablesize_buf));
+
+    _log("Buffer size %s, %s used for table array, %s remaining for key/value pair data\n",
+         bufsize_buf, tablesize_buf, rmsize_buf);
 
     _log("Generating %u random key/value pairs, all keys and values are between %u-%u bytes in size\n",
          ITEM_INSERT_COUNT, MIN_STR_LEN, MAX_STR_LEN);
@@ -212,15 +215,29 @@ int main(void)
 
     _log("Inserting all %u items into the table\n", ITEM_INSERT_COUNT);
 
+    uint64_t total_insert_us = 0u;
+    uint64_t longest_insert_us = 0u;
+
     for (uint32_t i = 0u; i < ITEM_INSERT_COUNT; i++)
     {
+        uint64_t startus = timing_usecs_elapsed();
         if (0 > hashtable_insert(&_table, _test_pairs[i].key, _test_pairs[i].key_size,
                                 _test_pairs[i].value, _test_pairs[i].value_size))
-         {
+        {
             printf("%s\n", hashtable_error_message());
             return -1;
-         }
+        }
+
+        uint64_t time_us = timing_usecs_elapsed() - startus;
+        total_insert_us += time_us;
+
+        if (time_us > longest_insert_us)
+        {
+            longest_insert_us = time_us;
+        }
     }
+
+    double avg_insert_us = ((double) total_insert_us) / ((double) ITEM_INSERT_COUNT);
 
     // Check bytes available after inserting everything
     bytes_available = 0u;
@@ -235,17 +252,29 @@ int main(void)
     _log("All items inserted, %s remaining, %u/%u array slots used\n",
          rmsize_buf, _table.array_slots_used, INITIAL_ARRAY_COUNT);
 
+    uint64_t total_retrieve_us = 0u;
+    uint64_t longest_retrieve_us = 0u;
+
     // Retrieve all stored items and verify they match expected
     for (uint32_t i = 0u; i < ITEM_INSERT_COUNT; i++)
     {
         char value[MAX_STR_LEN];
         hashtable_size_t value_size;
 
+        uint64_t startus = timing_usecs_elapsed();
         if (0 > hashtable_retrieve(&_table, _test_pairs[i].key, _test_pairs[i].key_size,
                                    value, &value_size))
         {
             printf("%s\n", hashtable_error_message());
             return -1;
+        }
+
+        uint64_t time_us = timing_usecs_elapsed() - startus;
+        total_retrieve_us += time_us;
+
+        if (time_us > longest_retrieve_us)
+        {
+            longest_retrieve_us = time_us;
         }
 
         if (0 != memcmp(_test_pairs[i].value, value, value_size))
@@ -255,7 +284,88 @@ int main(void)
         }
     }
 
-    _log("All %u items retrieved and contents verified\n", ITEM_INSERT_COUNT);
+    double avg_retrieve_us = ((double) total_retrieve_us) / ((double) ITEM_INSERT_COUNT);
+
+    _log("All %u items retrieved & verified via hashtable_retrieve\n", ITEM_INSERT_COUNT);
+
+    uint64_t total_remove_us = 0u;
+    uint64_t longest_remove_us = 0u;
+
+    // Remove all stored items
+    for (uint32_t i = 0u; i < ITEM_INSERT_COUNT; i++)
+    {
+        uint64_t startus = timing_usecs_elapsed();
+        if (0 > hashtable_remove(&_table, _test_pairs[i].key, _test_pairs[i].key_size))
+        {
+            printf("%s\n", hashtable_error_message());
+            return -1;
+        }
+
+        uint64_t time_us = timing_usecs_elapsed() - startus;
+        total_remove_us += time_us;
+
+        if (time_us > longest_remove_us)
+        {
+            longest_remove_us = time_us;
+        }
+    }
+
+    double avg_remove_us = ((double) total_remove_us) / ((double) ITEM_INSERT_COUNT);
+
+    // Verify all remove items are indeed removed, according to hashtable_has_key
+    _log("All items removed via hashtable_remove\n");
+
+    for (uint32_t i = 0u; i < ITEM_INSERT_COUNT; i++)
+    {
+        if (hashtable_has_key(&_table, _test_pairs[i].key, _test_pairs[i].key_size))
+        {
+            printf("Item #%u has been removed, but apparently is still in the table\n", i);
+            return -1;
+        }
+    }
+
+    _log("Removal of all items verified via hashtable_has_key\n");
+
+    _log("Inserting all %u items into the table again\n", ITEM_INSERT_COUNT);
+
+    uint64_t total_after_insert_us = 0u;
+    uint64_t longest_after_insert_us = 0u;
+
+    for (uint32_t i = 0u; i < ITEM_INSERT_COUNT; i++)
+    {
+        uint64_t startus = timing_usecs_elapsed();
+        if (0 > hashtable_insert(&_table, _test_pairs[i].key, _test_pairs[i].key_size,
+                                _test_pairs[i].value, _test_pairs[i].value_size))
+        {
+            printf("%s\n", hashtable_error_message());
+            return -1;
+        }
+
+        uint64_t time_us = timing_usecs_elapsed() - startus;
+        total_after_insert_us += time_us;
+
+        if (time_us > longest_after_insert_us)
+        {
+            longest_after_insert_us = time_us;
+        }
+    }
+
+    double avg_after_insert_us = ((double) total_after_insert_us) / ((double) ITEM_INSERT_COUNT);
+
+
+    printf("\n");
+    printf("Longest initial hashtable_insert time, microsecs   : %"PRIu64"\n", longest_insert_us);
+    printf("Avg. initial hashtable_insert time, microsecs      : %.2f\n", avg_insert_us);
+
+    printf("Longest hashtable_retrieve time, microsecs         : %"PRIu64"\n", longest_retrieve_us);
+    printf("Avg. hashtable_retrieve time, microsecs            : %.2f\n", avg_retrieve_us);
+
+    printf("Longest hashtable_remove time, microsecs           : %"PRIu64"\n", longest_remove_us);
+    printf("Avg. hashtable_remove time, microsecs              : %.2f\n\n", avg_remove_us);
+
+    printf("Longest secondary hashtable_insert time, microsecs : %"PRIu64"\n", longest_after_insert_us);
+    printf("Avg. secondary hashtable_insert time, microsecs    : %.2f\n", avg_after_insert_us);
+    printf("\n");
 
     return 0;
 }
