@@ -294,12 +294,12 @@ int main(void)
     // Retrieve all stored items and verify they match expected
     for (uint32_t i = 0u; i < ITEM_INSERT_COUNT; i++)
     {
-        char value[MAX_STR_LEN];
+        char *value;
         hashtable_size_t value_size;
 
         uint64_t startus = timing_usecs_elapsed();
         if (0 > hashtable_retrieve(&_table, _test_pairs[i].key, _test_pairs[i].key_size,
-                                   value, &value_size))
+                                   &value, &value_size))
         {
             printf("%s\n", hashtable_error_message());
             return -1;

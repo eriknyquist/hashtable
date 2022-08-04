@@ -107,7 +107,7 @@ typedef size_t hashtable_size_t;
  *
  * @return  Computed hash value
  */
-typedef uint32_t (*hashtable_hashfunc_t)(const void *data, const hashtable_size_t size);
+typedef uint32_t (*hashtable_hashfunc_t)(const char *data, const hashtable_size_t size);
 
 
 /**
@@ -162,8 +162,8 @@ int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
              key/value pair data, and -1 if an error occurred. Use #hashtable_error_message
  *           to get an error message if -1 is returned.
  */
-int hashtable_insert(hashtable_t *table, const void *key, const hashtable_size_t key_size,
-                     const void *value, const hashtable_size_t value_size);
+int hashtable_insert(hashtable_t *table, const char *key, const hashtable_size_t key_size,
+                     const char *value, const hashtable_size_t value_size);
 
 
 /**
@@ -177,23 +177,23 @@ int hashtable_insert(hashtable_t *table, const void *key, const hashtable_size_t
  * @return   0 if successful, 1 if the key does not exist, and -1 if an error occurred.
  *           Use #hashtable_error_message to get an error message if -1 is returned.
  */
-int hashtable_remove(hashtable_t *table, const void *key, const hashtable_size_t key_size);
+int hashtable_remove(hashtable_t *table, const char *key, const hashtable_size_t key_size);
 
 
 /**
- * Read a stored value from a table by key.
+ * Retrieve a pointer to a value stored in a table by key.
  *
  * @param table       Pointer to hashtable instance
  * @param key         Pointer to key data
  * @param key_size    Key data size in bytes
- * @param value       Pointer to location to store read value data
- * @param value_size  Pointer to location to store number of value bytes read
+ * @param value       Pointer to location to store value pointer
+ * @param value_size  Pointer to location to store value size
  *
  * @return   0 if successful, 1 if the key does not exist, and -1 if an error occurred.
  *           Use #hashtable_error_message to get an error message if -1 is returned.
  */
-int hashtable_retrieve(hashtable_t *table, const void *key, const hashtable_size_t key_size,
-                       void *value, hashtable_size_t *value_size);
+int hashtable_retrieve(hashtable_t *table, const char *key, const hashtable_size_t key_size,
+                       char **value, hashtable_size_t *value_size);
 
 
 /**
@@ -206,7 +206,7 @@ int hashtable_retrieve(hashtable_t *table, const void *key, const hashtable_size
  * @return   1 if key exists, 0 if key does not exist, and -1 if an error occurred.
  *           Use #hashtable_error_message to get an error message.
  */
-int hashtable_has_key(hashtable_t *table, const void *key, const hashtable_size_t key_size);
+int hashtable_has_key(hashtable_t *table, const char *key, const hashtable_size_t key_size);
 
 
 /**
@@ -226,9 +226,9 @@ int hashtable_bytes_remaining(hashtable_t *table, size_t *bytes_remaining);
  * be used to iterate over all key/value pairs stored in the table.
  *
  * @param table       Pointer to hashtable instance
- * @param key         Pointer to location to store key data
+ * @param key         Pointer to location to store key pointer
  * @param key_size    Pointer to location to store key data size in bytes
- * @param value       Pointer to location to store value data
+ * @param value       Pointer to location to store value pointer
  * @param value_size  Pointer to location to store value data size in bytes
  *
  * @return   0 if next item was read successfully, 1 if no item was read because
@@ -237,8 +237,8 @@ int hashtable_bytes_remaining(hashtable_t *table, size_t *bytes_remaining);
              and -1 if an error occurred. Use #hashtable_error_message to get an error
              message.
  */
-int hashtable_next_item(hashtable_t *table, void *key, hashtable_size_t *key_size,
-                        void *value, hashtable_size_t *value_size);
+int hashtable_next_item(hashtable_t *table, char **key, hashtable_size_t *key_size,
+                        char **value, hashtable_size_t *value_size);
 
 
 /**

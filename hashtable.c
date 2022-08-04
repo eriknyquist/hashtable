@@ -134,7 +134,7 @@ static char _error_msg[MAX_ERROR_MSG_SIZE]  = {'\0'};
 
 
 // Default hash function
-static uint32_t _default_hash(const void *data, const hashtable_size_t size)
+static uint32_t _default_hash(const char *data, const hashtable_size_t size)
 {
     static const uint32_t magic_multiplier = 37u;
     uint8_t *u8_data = (uint8_t *) data;
@@ -163,7 +163,7 @@ static hashtable_config_t _default_config = {_default_hash, 64u};
  *
  * @return Pointer to list at corresponding table index
  */
-static _keyval_pair_list_t *_get_table_list_by_key(hashtable_t *table, const void *key,
+static _keyval_pair_list_t *_get_table_list_by_key(hashtable_t *table, const char *key,
                                                    const hashtable_size_t key_size)
 {
     uint32_t hash = table->config.hash(key, key_size);
@@ -241,8 +241,8 @@ static _keyval_pair_t *_search_free_list(hashtable_t *table, size_t size_require
  *
  * @return Pointer to stored key/value pair, or NULL if there was not sufficient space to store
  */
-static _keyval_pair_t *_store_keyval_pair(hashtable_t *table, const void *key, const hashtable_size_t key_size,
-                                          const void *value, const hashtable_size_t value_size)
+static _keyval_pair_t *_store_keyval_pair(hashtable_t *table, const char *key, const hashtable_size_t key_size,
+                                          const char *value, const hashtable_size_t value_size)
 {
     _keyval_pair_t *ret = NULL;
     size_t size_required = sizeof(_keyval_pair_t) + key_size + value_size;
@@ -344,7 +344,7 @@ static int _setup_new_table(hashtable_t *table, uint32_t array_count, void *buff
  * @return Pointer to key/val pair with matching key data, or NULL if none was found
  */
 static _keyval_pair_t *_search_list_by_key(hashtable_t *table, _keyval_pair_list_t *list,
-                                           const void *key, const hashtable_size_t key_size,
+                                           const char *key, const hashtable_size_t key_size,
                                            _keyval_pair_t **previous)
 {
     _keyval_pair_t *curr = list->head;
@@ -457,8 +457,8 @@ static int _remove_from_table(hashtable_t *table, _keyval_pair_list_t *list,
  *
  * @return 0 if successful, -1 if enough space was not available
  */
-static int _insert_keyval_pair(hashtable_t *table, const void *key, const hashtable_size_t key_size,
-                               const void *value, const hashtable_size_t value_size)
+static int _insert_keyval_pair(hashtable_t *table, const char *key, const hashtable_size_t key_size,
+                               const char *value, const hashtable_size_t value_size)
 {
     _keyval_pair_list_t *list = _get_table_list_by_key(table, key, key_size);
 
@@ -556,8 +556,8 @@ int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
 /**
  * @see hashtable_api.h
  */
-int hashtable_insert(hashtable_t *table, const void *key, const hashtable_size_t key_size,
-                     const void *value, const hashtable_size_t value_size)
+int hashtable_insert(hashtable_t *table, const char *key, const hashtable_size_t key_size,
+                     const char *value, const hashtable_size_t value_size)
 {
 #ifndef HASHTABLE_DISABLE_PARAM_VALIDATION
     if ((NULL == table) || (NULL == key) || (NULL == value))
@@ -580,7 +580,7 @@ int hashtable_insert(hashtable_t *table, const void *key, const hashtable_size_t
 /**
  * @see hashtable_api.h
  */
-int hashtable_remove(hashtable_t *table, const void *key, const hashtable_size_t key_size)
+int hashtable_remove(hashtable_t *table, const char *key, const hashtable_size_t key_size)
 {
 #ifndef HASHTABLE_DISABLE_PARAM_VALIDATION
     if ((NULL == table) || (NULL == key))
@@ -613,8 +613,8 @@ int hashtable_remove(hashtable_t *table, const void *key, const hashtable_size_t
 /**
  * @see hashtable_api.h
  */
-int hashtable_retrieve(hashtable_t *table, const void *key, const hashtable_size_t key_size,
-                       void *value, hashtable_size_t *value_size)
+int hashtable_retrieve(hashtable_t *table, const char *key, const hashtable_size_t key_size,
+                       char **value, hashtable_size_t *value_size)
 {
 #ifndef HASHTABLE_DISABLE_PARAM_VALIDATION
     if ((NULL == table) || (NULL == key) || (NULL == value))
@@ -633,7 +633,7 @@ int hashtable_retrieve(hashtable_t *table, const void *key, const hashtable_size
         return 1;
     }
 
-    (void) memcpy(value, pair->data + pair->key_size, pair->value_size);
+    *value = (char *) (pair->data + pair->key_size);
 
     if (NULL != value_size)
     {
@@ -647,7 +647,7 @@ int hashtable_retrieve(hashtable_t *table, const void *key, const hashtable_size
 /**
  * @see hashtable_api.h
  */
-int hashtable_has_key(hashtable_t *table, const void *key, const hashtable_size_t key_size)
+int hashtable_has_key(hashtable_t *table, const char *key, const hashtable_size_t key_size)
 {
 #ifndef HASHTABLE_DISABLE_PARAM_VALIDATION
     if ((NULL == table) || (NULL == key))
@@ -693,8 +693,8 @@ int hashtable_bytes_remaining(hashtable_t *table, size_t *bytes_remaining)
 /**
  * @see hashtable_api.h
  */
-int hashtable_next_item(hashtable_t *table, void *key, hashtable_size_t *key_size,
-                        void *value, hashtable_size_t *value_size)
+int hashtable_next_item(hashtable_t *table, char **key, hashtable_size_t *key_size,
+                        char **value, hashtable_size_t *value_size)
 {
 #ifndef HASHTABLE_DISABLE_PARAM_VALIDATION
     if ((NULL == table) || (NULL == key) || (NULL == value))
@@ -725,12 +725,11 @@ int hashtable_next_item(hashtable_t *table, void *key, hashtable_size_t *key_siz
             td->cursor_item = list->head;
         }
 
-        // Copy out the next non-NULL item in the list
+        // Copy out pointers to the next non-NULL item in the list
         if (NULL != td->cursor_item)
         {
-            (void) memcpy(key, td->cursor_item->data, td->cursor_item->key_size);
-            (void) memcpy(value, td->cursor_item->data + td->cursor_item->key_size,
-                          td->cursor_item->value_size);
+            *key = (char *) td->cursor_item->data;
+            *value = (char *) td->cursor_item->data + td->cursor_item->key_size;
 
             if (NULL != key_size)
             {

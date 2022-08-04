@@ -71,11 +71,11 @@ static void _verify_table_contents(hashtable_t *table, _test_keyval_pair_t *pair
         if (1 == key_expected)
         {
             // Retrieve value and verify it matches what we put in
-            char value[MAX_STR_LEN + 1u];
+            char *value;
             size_t value_size;
 
             TEST_ASSERT_EQUAL_INT(0, hashtable_retrieve(table, pairs[i].key, pairs[i].key_size,
-                                                    value, &value_size));
+                                                    &value, &value_size));
             TEST_ASSERT_EQUAL_INT(pairs[i].value_size, value_size);
             TEST_ASSERT_EQUAL_INT(0, memcmp(pairs[i].value, value, value_size));
         }
@@ -86,8 +86,8 @@ static void _verify_table_contents(hashtable_t *table, _test_keyval_pair_t *pair
 static void _verify_iterated_table_contents(hashtable_t *table, _test_keyval_pair_t *pairs, unsigned int num_items,
                                             unsigned int num_items_removed)
 {
-    char key[MAX_STR_LEN + 1];
-    char value[MAX_STR_LEN + 1];
+    char *key;
+    char *value;
     size_t key_size;
     size_t value_size;
     int ret;
@@ -97,7 +97,7 @@ static void _verify_iterated_table_contents(hashtable_t *table, _test_keyval_pai
     // Reset cursor
     TEST_ASSERT_EQUAL_INT(0, hashtable_reset_cursor(table));
 
-    while(0 == (ret = hashtable_next_item(table, key, &key_size, value, &value_size)))
+    while(0 == (ret = hashtable_next_item(table, &key, &key_size, &value, &value_size)))
     {
         // Find the corresponding key/value pair data in the test data array
         _test_keyval_pair_t *test_pair = NULL;
@@ -302,9 +302,9 @@ void test_hashtable_remove_zero_key_size(void)
 void test_hashtable_retrieve_null_table(void)
 {
     const char *key = "key1";
-    uint8_t value[4u];
+    char *value;
     size_t value_size;
-    TEST_ASSERT_EQUAL_INT(-1, hashtable_retrieve(NULL, key, 4u, value, &value_size));
+    TEST_ASSERT_EQUAL_INT(-1, hashtable_retrieve(NULL, key, 4u, &value, &value_size));
 }
 
 
@@ -314,9 +314,9 @@ void test_hashtable_retrieve_null_key(void)
     hashtable_t table;
     TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
 
-    uint8_t value[4u];
+    char *value;
     size_t value_size;
-    TEST_ASSERT_EQUAL_INT(-1, hashtable_retrieve(&table, NULL, 4u, value, &value_size));
+    TEST_ASSERT_EQUAL_INT(-1, hashtable_retrieve(&table, NULL, 4u, &value, &value_size));
 }
 
 
@@ -371,8 +371,8 @@ void test_hashtable_bytes_remaining_null_key(void)
 // Tests that hashtable_next_item returns an error when a null table is passed
 void test_hashtable_next_item_null_table(void)
 {
-    uint8_t key[4];
-    uint8_t value[4];
+    char *key;
+    char *value;
     size_t key_size;
     size_t value_size;
     TEST_ASSERT_EQUAL_INT(-1, hashtable_next_item(NULL, &key, &key_size, &value, &value_size));
@@ -385,10 +385,10 @@ void test_hashtable_next_item_null_key(void)
     hashtable_t table;
     TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
 
-    uint8_t value[4];
+    char *value;
     size_t key_size;
     size_t value_size;
-    TEST_ASSERT_EQUAL_INT(-1, hashtable_next_item(&table, NULL, &key_size, value, &value_size));
+    TEST_ASSERT_EQUAL_INT(-1, hashtable_next_item(&table, NULL, &key_size, &value, &value_size));
 }
 
 
@@ -398,10 +398,10 @@ void test_hashtable_next_item_null_value(void)
     hashtable_t table;
     TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
 
-    uint8_t key[4];
+    char *key;
     size_t key_size;
     size_t value_size;
-    TEST_ASSERT_EQUAL_INT(-1, hashtable_next_item(&table, key, &key_size, NULL, &value_size));
+    TEST_ASSERT_EQUAL_INT(-1, hashtable_next_item(&table, &key, &key_size, NULL, &value_size));
 }
 
 
@@ -424,9 +424,9 @@ void test_hashtable_insert_buffer_full(void)
     hashtable_t table;
     TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, &config, test_buf, sizeof(test_buf)));
 
-    uint8_t key1[128u];
-    uint8_t key2[128u];
-    uint8_t value[128u];
+    char key1[128u];
+    char key2[128u];
+    char value[128u];
 
     // Just need 2 unique keys
     (void) memset(key1, 0xaa, sizeof(key1));
@@ -459,9 +459,9 @@ void test_hashtable_retrieve_no_such_key(void)
     hashtable_t table;
     TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
 
-    uint8_t key1[128u];  // This key will be inserted
-    uint8_t key2[128u];  // This key will not be inserted
-    uint8_t value[128u];
+    char key1[128u];  // This key will be inserted
+    char key2[128u];  // This key will not be inserted
+    char value[128u];
 
     // Just need 2 unique keys
     (void) memset(key1, 0xaa, sizeof(key1));
@@ -471,9 +471,9 @@ void test_hashtable_retrieve_no_such_key(void)
     TEST_ASSERT_EQUAL_INT(0, hashtable_insert(&table, key1, sizeof(key1), value, sizeof(value)));
 
     // Try to retrieve key2, should fail with return value of 1
-    uint8_t read_value[128u];
+    char *read_value;
     size_t read_value_size;
-    TEST_ASSERT_EQUAL_INT(1, hashtable_retrieve(&table, key2, sizeof(key2), read_value, &read_value_size));
+    TEST_ASSERT_EQUAL_INT(1, hashtable_retrieve(&table, key2, sizeof(key2), &read_value, &read_value_size));
 }
 
 
@@ -483,9 +483,9 @@ void test_hashtable_remove_no_such_key(void)
     hashtable_t table;
     TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
 
-    uint8_t key1[128u];  // This key will be inserted
-    uint8_t key2[128u];  // This key will not be inserted
-    uint8_t value[128u];
+    char key1[128u];  // This key will be inserted
+    char key2[128u];  // This key will not be inserted
+    char value[128u];
 
     // Just need 2 unique keys
     (void) memset(key1, 0xaa, sizeof(key1));
@@ -660,9 +660,9 @@ void test_hashtable_bytes_remaining_overwrite_samesizevalue(void)
     TEST_ASSERT_EQUAL_INT(bytes_remaining_2, bytes_remaining_3);
 
     // Retrieve item and verify value matches new value
-    char read_value[MAX_STR_LEN + 1];
+    char *read_value;
     size_t read_size = 0u;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_retrieve(&table, key, key_size, read_value, &read_size));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_retrieve(&table, key, key_size, &read_value, &read_size));
 
     TEST_ASSERT_EQUAL_INT(value2_size, read_size);
     TEST_ASSERT_EQUAL_INT(0, memcmp(value2, read_value, read_size));
@@ -714,9 +714,9 @@ void test_hashtable_bytes_remaining_overwrite_smallervalue(void)
     TEST_ASSERT_EQUAL_INT(bytes_remaining_2, bytes_remaining_3);
 
     // Retrieve item and verify value matches new value
-    char read_value[MAX_STR_LEN + 1];
+    char *read_value;
     size_t read_size = 0u;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_retrieve(&table, key, key_size, read_value, &read_size));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_retrieve(&table, key, key_size, &read_value, &read_size));
 
     TEST_ASSERT_EQUAL_INT(value2_size, read_size);
     TEST_ASSERT_EQUAL_INT(0, memcmp(value2, read_value, read_size));
@@ -769,9 +769,9 @@ void test_hashtable_bytes_remaining_overwrite_largervalue(void)
     TEST_ASSERT_TRUE(bytes_remaining_3 < bytes_remaining_2);
 
     // Retrieve item and verify value matches new value
-    char read_value[MAX_STR_LEN + 1];
+    char *read_value;
     size_t read_size = 0u;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_retrieve(&table, key, key_size, read_value, &read_size));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_retrieve(&table, key, key_size, &read_value, &read_size));
 
     TEST_ASSERT_EQUAL_INT(value2_size, read_size);
     TEST_ASSERT_EQUAL_INT(0, memcmp(value2, read_value, read_size));
