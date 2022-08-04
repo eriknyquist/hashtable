@@ -412,6 +412,93 @@ void test_hashtable_reset_cursor_null_table(void)
 }
 
 
+// Tests that hashtable_insert returns 1 when no space is available in the buffer
+void test_hashtable_insert_buffer_full(void)
+{
+    uint8_t test_buf[512];
+
+    hashtable_config_t config;
+    (void) memcpy(&config, hashtable_default_config(), sizeof(config));
+    config.initial_array_count = 1u;
+
+    hashtable_t table;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, &config, test_buf, sizeof(test_buf)));
+
+    uint8_t key1[128u];
+    uint8_t key2[128u];
+    uint8_t value[128u];
+
+    // Just need 2 unique keys
+    (void) memset(key1, 0xaa, sizeof(key1));
+    (void) memset(key2, 0xbb, sizeof(key2));
+
+    size_t bytes_remaining_1 = 0u;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_bytes_remaining(&table, &bytes_remaining_1));
+
+    // First insertion should succeed
+    TEST_ASSERT_EQUAL_INT(0, hashtable_insert(&table, key1, sizeof(key1), value, sizeof(value)));
+
+    // Bytes remaining should have decreased
+    size_t bytes_remaining_2 = 0u;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_bytes_remaining(&table, &bytes_remaining_2));
+    TEST_ASSERT_TRUE(bytes_remaining_2 < bytes_remaining_1);
+
+    // Second insertion should fail with return value of 1
+    TEST_ASSERT_EQUAL_INT(1, hashtable_insert(&table, key2, sizeof(key2), value, sizeof(value)));
+
+    // Bytes remaining should have stayed the same
+    size_t bytes_remaining_3 = 0u;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_bytes_remaining(&table, &bytes_remaining_3));
+    TEST_ASSERT_EQUAL_INT(bytes_remaining_2, bytes_remaining_3);
+}
+
+
+// Tests that hashtable_retrieve returns 1 when the requested key does not exist
+void test_hashtable_retrieve_no_such_key(void)
+{
+    hashtable_t table;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+
+    uint8_t key1[128u];  // This key will be inserted
+    uint8_t key2[128u];  // This key will not be inserted
+    uint8_t value[128u];
+
+    // Just need 2 unique keys
+    (void) memset(key1, 0xaa, sizeof(key1));
+    (void) memset(key2, 0xbb, sizeof(key2));
+
+    // Insert value with key1
+    TEST_ASSERT_EQUAL_INT(0, hashtable_insert(&table, key1, sizeof(key1), value, sizeof(value)));
+
+    // Try to retrieve key2, should fail with return value of 1
+    uint8_t read_value[128u];
+    size_t read_value_size;
+    TEST_ASSERT_EQUAL_INT(1, hashtable_retrieve(&table, key2, sizeof(key2), read_value, &read_value_size));
+}
+
+
+// Tests that hashtable_remove returns 1 when the requested key does not exist
+void test_hashtable_remove_no_such_key(void)
+{
+    hashtable_t table;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+
+    uint8_t key1[128u];  // This key will be inserted
+    uint8_t key2[128u];  // This key will not be inserted
+    uint8_t value[128u];
+
+    // Just need 2 unique keys
+    (void) memset(key1, 0xaa, sizeof(key1));
+    (void) memset(key2, 0xbb, sizeof(key2));
+
+    // Insert value with key1
+    TEST_ASSERT_EQUAL_INT(0, hashtable_insert(&table, key1, sizeof(key1), value, sizeof(value)));
+
+    // Try to remove key2, should fail with return value of 1
+    TEST_ASSERT_EQUAL_INT(1, hashtable_remove(&table, key2, sizeof(key2)));
+}
+
+
 // Tests that all items exist in the table and can be retrieved, after 1000 items are inserted
 void test_hashtable_insert1000items(void)
 {
@@ -722,6 +809,9 @@ int main(void)
     RUN_TEST(test_hashtable_reset_cursor_null_table);
 
     // Woohoo now the more fun tests
+    RUN_TEST(test_hashtable_insert_buffer_full);
+    RUN_TEST(test_hashtable_retrieve_no_such_key);
+    RUN_TEST(test_hashtable_remove_no_such_key);
     RUN_TEST(test_hashtable_insert1000items);
     RUN_TEST(test_hashtable_insert1000items_remove500);
     RUN_TEST(test_hashtable_next_item_iterate1000items);
