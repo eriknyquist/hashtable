@@ -91,25 +91,25 @@ Typedefs</h2></td></tr>
 <tr class="memitem:acab608df8c32a0ef8e8c6fe0cfab1208"><td class="memItemLeft" align="right" valign="top"><a id="acab608df8c32a0ef8e8c6fe0cfab1208" name="acab608df8c32a0ef8e8c6fe0cfab1208"></a>
 typedef size_t&#160;</td><td class="memItemRight" valign="bottom"><b>hashtable_size_t</b></td></tr>
 <tr class="separator:acab608df8c32a0ef8e8c6fe0cfab1208"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae5b1c880a0fa4f6078447faca248b254"><td class="memItemLeft" align="right" valign="top">typedef uint32_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable__api_8h.html#ae5b1c880a0fa4f6078447faca248b254">hashtable_hashfunc_t</a>) (const void *data, const hashtable_size_t size)</td></tr>
-<tr class="separator:ae5b1c880a0fa4f6078447faca248b254"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaff1f8de1b5e4a9ddbdf88a9549e8907"><td class="memItemLeft" align="right" valign="top">typedef uint32_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable__api_8h.html#aaff1f8de1b5e4a9ddbdf88a9549e8907">hashtable_hashfunc_t</a>) (const char *data, const hashtable_size_t size)</td></tr>
+<tr class="separator:aaff1f8de1b5e4a9ddbdf88a9549e8907"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a15986e05c7f0cd9f2cdc8c5b17696b61"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable__api_8h.html#a15986e05c7f0cd9f2cdc8c5b17696b61">hashtable_create</a> (<a class="el" href="structhashtable__t.html">hashtable_t</a> *table, const <a class="el" href="structhashtable__config__t.html">hashtable_config_t</a> *config, void *buffer, size_t buffer_size)</td></tr>
 <tr class="separator:a15986e05c7f0cd9f2cdc8c5b17696b61"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa345f3ea2c9d8b3437c9618db4c960a3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable__api_8h.html#aa345f3ea2c9d8b3437c9618db4c960a3">hashtable_insert</a> (<a class="el" href="structhashtable__t.html">hashtable_t</a> *table, const void *key, const hashtable_size_t key_size, const void *value, const hashtable_size_t value_size)</td></tr>
-<tr class="separator:aa345f3ea2c9d8b3437c9618db4c960a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6fea6e841eb193be46b00a20c0cc2e74"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable__api_8h.html#a6fea6e841eb193be46b00a20c0cc2e74">hashtable_remove</a> (<a class="el" href="structhashtable__t.html">hashtable_t</a> *table, const void *key, const hashtable_size_t key_size)</td></tr>
-<tr class="separator:a6fea6e841eb193be46b00a20c0cc2e74"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aba42426892e99e958de2f919f48e6b9d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable__api_8h.html#aba42426892e99e958de2f919f48e6b9d">hashtable_retrieve</a> (<a class="el" href="structhashtable__t.html">hashtable_t</a> *table, const void *key, const hashtable_size_t key_size, void *value, hashtable_size_t *value_size)</td></tr>
-<tr class="separator:aba42426892e99e958de2f919f48e6b9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a847b927b76a5358071a0293d9a7da974"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable__api_8h.html#a847b927b76a5358071a0293d9a7da974">hashtable_has_key</a> (<a class="el" href="structhashtable__t.html">hashtable_t</a> *table, const void *key, const hashtable_size_t key_size)</td></tr>
-<tr class="separator:a847b927b76a5358071a0293d9a7da974"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ecf50cf685ca98768a69b328f81e582"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable__api_8h.html#a7ecf50cf685ca98768a69b328f81e582">hashtable_insert</a> (<a class="el" href="structhashtable__t.html">hashtable_t</a> *table, const char *key, const hashtable_size_t key_size, const char *value, const hashtable_size_t value_size)</td></tr>
+<tr class="separator:a7ecf50cf685ca98768a69b328f81e582"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a97aa30723003954d795a7a8dd4612b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable__api_8h.html#a3a97aa30723003954d795a7a8dd4612b">hashtable_remove</a> (<a class="el" href="structhashtable__t.html">hashtable_t</a> *table, const char *key, const hashtable_size_t key_size)</td></tr>
+<tr class="separator:a3a97aa30723003954d795a7a8dd4612b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45f3fe6d72ed5382addf276378966678"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable__api_8h.html#a45f3fe6d72ed5382addf276378966678">hashtable_retrieve</a> (<a class="el" href="structhashtable__t.html">hashtable_t</a> *table, const char *key, const hashtable_size_t key_size, char **value, hashtable_size_t *value_size)</td></tr>
+<tr class="separator:a45f3fe6d72ed5382addf276378966678"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae33a0f5ea3aca2454d641bf3fe5357fb"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable__api_8h.html#ae33a0f5ea3aca2454d641bf3fe5357fb">hashtable_has_key</a> (<a class="el" href="structhashtable__t.html">hashtable_t</a> *table, const char *key, const hashtable_size_t key_size)</td></tr>
+<tr class="separator:ae33a0f5ea3aca2454d641bf3fe5357fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3c093157186aa6d372cb406b3c2c1158"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable__api_8h.html#a3c093157186aa6d372cb406b3c2c1158">hashtable_bytes_remaining</a> (<a class="el" href="structhashtable__t.html">hashtable_t</a> *table, size_t *bytes_remaining)</td></tr>
 <tr class="separator:a3c093157186aa6d372cb406b3c2c1158"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a16d88e461d63dc7dcd1e2648bea95429"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable__api_8h.html#a16d88e461d63dc7dcd1e2648bea95429">hashtable_next_item</a> (<a class="el" href="structhashtable__t.html">hashtable_t</a> *table, void *key, hashtable_size_t *key_size, void *value, hashtable_size_t *value_size)</td></tr>
-<tr class="separator:a16d88e461d63dc7dcd1e2648bea95429"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1af5b79bf710f1a8dbe6c54ac0c544fc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable__api_8h.html#a1af5b79bf710f1a8dbe6c54ac0c544fc">hashtable_next_item</a> (<a class="el" href="structhashtable__t.html">hashtable_t</a> *table, char **key, hashtable_size_t *key_size, char **value, hashtable_size_t *value_size)</td></tr>
+<tr class="separator:a1af5b79bf710f1a8dbe6c54ac0c544fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4e04af9382451a2c86c8e4e84f0a8224"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable__api_8h.html#a4e04af9382451a2c86c8e4e84f0a8224">hashtable_reset_cursor</a> (<a class="el" href="structhashtable__t.html">hashtable_t</a> *table)</td></tr>
 <tr class="separator:a4e04af9382451a2c86c8e4e84f0a8224"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a007972a84ca2f222999839ed760142ba"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structhashtable__config__t.html">hashtable_config_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable__api_8h.html#a007972a84ca2f222999839ed760142ba">hashtable_default_config</a> (void)</td></tr>
@@ -121,14 +121,14 @@ Functions</h2></td></tr>
 <div class="textblock"><p >Implements a lightweight separate-chaining hashtable designed to be flexible enough for embedded systems. </p>
 <dl class="section author"><dt>Author</dt><dd>Erik K. Nyquist </dd></dl>
 </div><h2 class="groupheader">Typedef Documentation</h2>
-<a id="ae5b1c880a0fa4f6078447faca248b254" name="ae5b1c880a0fa4f6078447faca248b254"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae5b1c880a0fa4f6078447faca248b254">&#9670;&nbsp;</a></span>hashtable_hashfunc_t</h2>
+<a id="aaff1f8de1b5e4a9ddbdf88a9549e8907" name="aaff1f8de1b5e4a9ddbdf88a9549e8907"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaff1f8de1b5e4a9ddbdf88a9549e8907">&#9670;&nbsp;</a></span>hashtable_hashfunc_t</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef uint32_t(* hashtable_hashfunc_t) (const void *data, const hashtable_size_t size)</td>
+          <td class="memname">typedef uint32_t(* hashtable_hashfunc_t) (const char *data, const hashtable_size_t size)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -273,8 +273,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a847b927b76a5358071a0293d9a7da974" name="a847b927b76a5358071a0293d9a7da974"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a847b927b76a5358071a0293d9a7da974">&#9670;&nbsp;</a></span>hashtable_has_key()</h2>
+<a id="ae33a0f5ea3aca2454d641bf3fe5357fb" name="ae33a0f5ea3aca2454d641bf3fe5357fb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae33a0f5ea3aca2454d641bf3fe5357fb">&#9670;&nbsp;</a></span>hashtable_has_key()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -288,7 +288,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const void *&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>key</em>, </td>
         </tr>
         <tr>
@@ -317,8 +317,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="aa345f3ea2c9d8b3437c9618db4c960a3" name="aa345f3ea2c9d8b3437c9618db4c960a3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa345f3ea2c9d8b3437c9618db4c960a3">&#9670;&nbsp;</a></span>hashtable_insert()</h2>
+<a id="a7ecf50cf685ca98768a69b328f81e582" name="a7ecf50cf685ca98768a69b328f81e582"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7ecf50cf685ca98768a69b328f81e582">&#9670;&nbsp;</a></span>hashtable_insert()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -332,7 +332,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const void *&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>key</em>, </td>
         </tr>
         <tr>
@@ -344,7 +344,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const void *&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>value</em>, </td>
         </tr>
         <tr>
@@ -375,8 +375,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a16d88e461d63dc7dcd1e2648bea95429" name="a16d88e461d63dc7dcd1e2648bea95429"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a16d88e461d63dc7dcd1e2648bea95429">&#9670;&nbsp;</a></span>hashtable_next_item()</h2>
+<a id="a1af5b79bf710f1a8dbe6c54ac0c544fc" name="a1af5b79bf710f1a8dbe6c54ac0c544fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1af5b79bf710f1a8dbe6c54ac0c544fc">&#9670;&nbsp;</a></span>hashtable_next_item()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -390,7 +390,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">void *&#160;</td>
+          <td class="paramtype">char **&#160;</td>
           <td class="paramname"><em>key</em>, </td>
         </tr>
         <tr>
@@ -402,7 +402,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">void *&#160;</td>
+          <td class="paramtype">char **&#160;</td>
           <td class="paramname"><em>value</em>, </td>
         </tr>
         <tr>
@@ -422,9 +422,9 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">table</td><td>Pointer to hashtable instance </td></tr>
-    <tr><td class="paramname">key</td><td>Pointer to location to store key data </td></tr>
+    <tr><td class="paramname">key</td><td>Pointer to location to store key pointer </td></tr>
     <tr><td class="paramname">key_size</td><td>Pointer to location to store key data size in bytes </td></tr>
-    <tr><td class="paramname">value</td><td>Pointer to location to store value data </td></tr>
+    <tr><td class="paramname">value</td><td>Pointer to location to store value pointer </td></tr>
     <tr><td class="paramname">value_size</td><td>Pointer to location to store value data size in bytes</td></tr>
   </table>
   </dd>
@@ -433,8 +433,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a6fea6e841eb193be46b00a20c0cc2e74" name="a6fea6e841eb193be46b00a20c0cc2e74"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6fea6e841eb193be46b00a20c0cc2e74">&#9670;&nbsp;</a></span>hashtable_remove()</h2>
+<a id="a3a97aa30723003954d795a7a8dd4612b" name="a3a97aa30723003954d795a7a8dd4612b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3a97aa30723003954d795a7a8dd4612b">&#9670;&nbsp;</a></span>hashtable_remove()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -448,7 +448,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const void *&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>key</em>, </td>
         </tr>
         <tr>
@@ -492,7 +492,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Reset the key/value pair cursor, which is used for iteration via <a class="el" href="hashtable__api_8h.html#a16d88e461d63dc7dcd1e2648bea95429">hashtable_next_item</a>. This allows iterating through a table again after <a class="el" href="hashtable__api_8h.html#a16d88e461d63dc7dcd1e2648bea95429">hashtable_next_item</a> has already iterated over the whole table and returned a value of 1.</p>
+<p >Reset the key/value pair cursor, which is used for iteration via <a class="el" href="hashtable__api_8h.html#a1af5b79bf710f1a8dbe6c54ac0c544fc">hashtable_next_item</a>. This allows iterating through a table again after <a class="el" href="hashtable__api_8h.html#a1af5b79bf710f1a8dbe6c54ac0c544fc">hashtable_next_item</a> has already iterated over the whole table and returned a value of 1.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">table</td><td>Pointer to hashtable instance</td></tr>
@@ -503,8 +503,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="aba42426892e99e958de2f919f48e6b9d" name="aba42426892e99e958de2f919f48e6b9d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aba42426892e99e958de2f919f48e6b9d">&#9670;&nbsp;</a></span>hashtable_retrieve()</h2>
+<a id="a45f3fe6d72ed5382addf276378966678" name="a45f3fe6d72ed5382addf276378966678"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a45f3fe6d72ed5382addf276378966678">&#9670;&nbsp;</a></span>hashtable_retrieve()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -518,7 +518,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const void *&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>key</em>, </td>
         </tr>
         <tr>
@@ -530,7 +530,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">void *&#160;</td>
+          <td class="paramtype">char **&#160;</td>
           <td class="paramname"><em>value</em>, </td>
         </tr>
         <tr>
@@ -546,14 +546,14 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Read a stored value from a table by key.</p>
+<p >Retrieve a pointer to a value stored in a table by key.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">table</td><td>Pointer to hashtable instance </td></tr>
     <tr><td class="paramname">key</td><td>Pointer to key data </td></tr>
     <tr><td class="paramname">key_size</td><td>Key data size in bytes </td></tr>
-    <tr><td class="paramname">value</td><td>Pointer to location to store read value data </td></tr>
-    <tr><td class="paramname">value_size</td><td>Pointer to location to store number of value bytes read</td></tr>
+    <tr><td class="paramname">value</td><td>Pointer to location to store value pointer </td></tr>
+    <tr><td class="paramname">value_size</td><td>Pointer to location to store value size</td></tr>
   </table>
   </dd>
 </dl>
