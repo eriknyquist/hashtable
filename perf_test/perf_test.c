@@ -168,7 +168,7 @@ static void _log(const char *fmt, ...)
 // Utility functions for generating random numbers / ASCII strings
 static int _rand_range(int lower, int upper)
 {
-    return (rand() % ((upper - lower) + 1u)) + lower;
+    return (rand() % ((upper - lower) + 1)) + lower;
 }
 
 
