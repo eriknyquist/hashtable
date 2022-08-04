@@ -80,6 +80,9 @@
 #include <stdint.h>
 
 
+#define HASHTABLE_LIB_VERSION "v0.1.0"
+
+
 #if !defined(HASHTABLE_SIZE_T_UINT16) && !defined(HASHTABLE_SIZE_T_UINT32) && !defined(HASHTABLE_SIZE_T_SYS)
 #define HASHTABLE_SIZE_T_SYS
 #endif // if !defined..
