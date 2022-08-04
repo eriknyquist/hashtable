@@ -541,7 +541,7 @@ int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
 
     (void) memcpy(&table->config, config, sizeof(table->config));
 
-    if (_setup_new_table(table, config->initial_array_count, buffer, buffer_size) < 0)
+    if (_setup_new_table(table, config->array_count, buffer, buffer_size) < 0)
     {
         return -1;
     }

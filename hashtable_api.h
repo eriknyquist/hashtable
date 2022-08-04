@@ -100,21 +100,23 @@ typedef size_t hashtable_size_t;
 
 
 /**
+ * Hash function used for hashing key data
+ *
+ * @param data   Pointer to key data
+ * @param size   Key data size in bytes
+ *
+ * @return  Computed hash value
+ */
+typedef uint32_t (*hashtable_hashfunc_t)(const void *data, const hashtable_size_t size);
+
+
+/**
  * @brief Configuration data for a single hashtable instance
  */
 typedef struct
 {
-    /**
-     * Pointer to hash function to use for hashing key data
-     *
-     * @param data   Pointer to key data
-     * @param size   Key data size in bytes
-     *
-     * @return  Computed hash value
-     */
-    uint32_t (*hash)(const void *data, const hashtable_size_t size);
-
-    uint32_t initial_array_count; ///< Number of table array slots
+    hashtable_hashfunc_t hash;    ///< Hash function to use, must not be NULL
+    uint32_t array_count;         ///< Number of table array slots, must not be 0
 } hashtable_config_t;
 
 
