@@ -479,6 +479,7 @@ static int _insert_keyval_pair(hashtable_t *table, const void *key, const hashta
             // Existing item is too small, need to remove it and insert a new item
             if (_remove_from_table(table, list, pair, prev) < 0)
             {
+                ERROR("Item removal failed");
                 return -1;
             }
         }
@@ -488,8 +489,7 @@ static int _insert_keyval_pair(hashtable_t *table, const void *key, const hashta
     pair = _store_keyval_pair(table, key, key_size, value, value_size);
     if (NULL == pair)
     {
-        ERROR("No space in buffer to insert new item");
-        return -1;
+        return 1;
     }
 
     // Add new key/val pair into the list at the current slot in the table
@@ -603,7 +603,7 @@ int hashtable_remove(hashtable_t *table, const void *key, const hashtable_size_t
     if (NULL == pair)
     {
         // Item does not exist
-        return 0;
+        return 1;
     }
 
     return _remove_from_table(table, list, pair, prev);
@@ -630,8 +630,7 @@ int hashtable_retrieve(hashtable_t *table, const void *key, const hashtable_size
     if (NULL == pair)
     {
         // Item does not exist
-        ERROR("Requested key does not exist");
-        return -1;
+        return 1;
     }
 
     (void) memcpy(value, pair->data + pair->key_size, pair->value_size);

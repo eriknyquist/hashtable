@@ -140,7 +140,7 @@ typedef struct
  * @param buffer_size  Size of buffer in bytes
  *
  * @return   0 if successful, -1 if an error occurred. Use #hashtable_error_message
- *           to get an error message.
+ *           to get an error message if -1 is returned.
  */
 int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
                      void *buffer, size_t buffer_size);
@@ -156,8 +156,9 @@ int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
  * @param value       Pointer to value data
  * @param value_size  Value data size in bytes
  *
- * @return   0 if successful, -1 if an error occurred. Use #hashtable_error_message
- *           to get an error message.
+ * @return   0 if successful, 1 if there is not enough space left in the buffer for
+             key/value pair data, and -1 if an error occurred. Use #hashtable_error_message
+ *           to get an error message if -1 is returned.
  */
 int hashtable_insert(hashtable_t *table, const void *key, const hashtable_size_t key_size,
                      const void *value, const hashtable_size_t value_size);
@@ -171,8 +172,8 @@ int hashtable_insert(hashtable_t *table, const void *key, const hashtable_size_t
  * @param key       Pointer to key data
  * @param key_size  Key data size in bytes
  *
- * @return   0 if successful, -1 if an error occurred. Use #hashtable_error_message
- *           to get an error message.
+ * @return   0 if successful, 1 if the key does not exist, and -1 if an error occurred.
+ *           Use #hashtable_error_message to get an error message if -1 is returned.
  */
 int hashtable_remove(hashtable_t *table, const void *key, const hashtable_size_t key_size);
 
@@ -186,8 +187,8 @@ int hashtable_remove(hashtable_t *table, const void *key, const hashtable_size_t
  * @param value       Pointer to location to store read value data
  * @param value_size  Pointer to location to store number of value bytes read
  *
- * @return   0 if successful, -1 if an error occurred. Use #hashtable_error_message
- *           to get an error message.
+ * @return   0 if successful, 1 if the key does not exist, and -1 if an error occurred.
+ *           Use #hashtable_error_message to get an error message if -1 is returned.
  */
 int hashtable_retrieve(hashtable_t *table, const void *key, const hashtable_size_t key_size,
                        void *value, hashtable_size_t *value_size);
