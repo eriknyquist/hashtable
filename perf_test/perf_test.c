@@ -205,7 +205,7 @@ int main(void)
 
     hashtable_config_t config;
     (void) memcpy(&config, hashtable_default_config(), sizeof(config));
-    config.initial_array_count = INITIAL_ARRAY_COUNT;
+    config.array_count = INITIAL_ARRAY_COUNT;
 
     if (hashtable_create(&_table, &config, _buffer, sizeof(_buffer)) < 0)
     {

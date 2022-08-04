@@ -532,7 +532,7 @@ int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
         return -1;
     }
 
-    if (0u == config->initial_array_count)
+    if (0u == config->array_count)
     {
         ERROR("Zero array count in hashtable_config_t");
         return -1;

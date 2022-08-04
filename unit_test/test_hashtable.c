@@ -192,7 +192,7 @@ void test_hashtable_create_null_hash_func(void)
 
 
 // Tests that hashtable_create returns an error when a config with zero for the initial array count is passed
-void test_hashtable_create_zero_initial_array_count(void)
+void test_hashtable_create_zero_array_count(void)
 {
     hashtable_t table;
     hashtable_config_t config;
@@ -200,7 +200,7 @@ void test_hashtable_create_zero_initial_array_count(void)
     // Make a copy of the default config
     (void) memcpy(&config, hashtable_default_config(), sizeof(config));
 
-    config.initial_array_count = 0u;
+    config.array_count = 0u;
 
     TEST_ASSERT_EQUAL_INT(-1, hashtable_create(&table, &config, _buffer, sizeof(_buffer)));
 }
@@ -419,7 +419,7 @@ void test_hashtable_insert_buffer_full(void)
 
     hashtable_config_t config;
     (void) memcpy(&config, hashtable_default_config(), sizeof(config));
-    config.initial_array_count = 1u;
+    config.array_count = 1u;
 
     hashtable_t table;
     TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, &config, test_buf, sizeof(test_buf)));
@@ -786,7 +786,7 @@ int main(void)
     RUN_TEST(test_hashtable_create_null_table);
     RUN_TEST(test_hashtable_create_null_config);
     RUN_TEST(test_hashtable_create_null_hash_func);
-    RUN_TEST(test_hashtable_create_zero_initial_array_count);
+    RUN_TEST(test_hashtable_create_zero_array_count);
     RUN_TEST(test_hashtable_create_buffer_size_too_small);
     RUN_TEST(test_hashtable_insert_null_table);
     RUN_TEST(test_hashtable_insert_null_key);
