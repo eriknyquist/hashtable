@@ -77,40 +77,18 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a06df355ea00ced7da343f11aea23e36f"><td class="memItemLeft" align="right" valign="top">uint32_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhashtable__config__t.html#a06df355ea00ced7da343f11aea23e36f">hash</a> )(const void *data, const hashtable_size_t size)</td></tr>
-<tr class="separator:a06df355ea00ced7da343f11aea23e36f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1551525fc4b3e387af69682e120407b1"><td class="memItemLeft" align="right" valign="top"><a id="a1551525fc4b3e387af69682e120407b1" name="a1551525fc4b3e387af69682e120407b1"></a>
-uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>initial_array_count</b></td></tr>
-<tr class="memdesc:a1551525fc4b3e387af69682e120407b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of table array slots. <br /></td></tr>
-<tr class="separator:a1551525fc4b3e387af69682e120407b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4527e2bffdfccc748eb501b6461e6284"><td class="memItemLeft" align="right" valign="top"><a id="a4527e2bffdfccc748eb501b6461e6284" name="a4527e2bffdfccc748eb501b6461e6284"></a>
+<a class="el" href="hashtable__api_8h.html#ae5b1c880a0fa4f6078447faca248b254">hashtable_hashfunc_t</a>&#160;</td><td class="memItemRight" valign="bottom"><b>hash</b></td></tr>
+<tr class="memdesc:a4527e2bffdfccc748eb501b6461e6284"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hash function to use, must not be NULL. <br /></td></tr>
+<tr class="separator:a4527e2bffdfccc748eb501b6461e6284"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d8a291c925177b83923523141e4ef3a"><td class="memItemLeft" align="right" valign="top"><a id="a9d8a291c925177b83923523141e4ef3a" name="a9d8a291c925177b83923523141e4ef3a"></a>
+uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>array_count</b></td></tr>
+<tr class="memdesc:a9d8a291c925177b83923523141e4ef3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of table array slots, must not be 0. <br /></td></tr>
+<tr class="separator:a9d8a291c925177b83923523141e4ef3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Configuration data for a single hashtable instance. </p>
-</div><h2 class="groupheader">Member Data Documentation</h2>
-<a id="a06df355ea00ced7da343f11aea23e36f" name="a06df355ea00ced7da343f11aea23e36f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a06df355ea00ced7da343f11aea23e36f">&#9670;&nbsp;</a></span>hash</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">uint32_t(* hashtable_config_t::hash) (const void *data, const hashtable_size_t size)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Pointer to hash function to use for hashing key data</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">data</td><td>Pointer to key data </td></tr>
-    <tr><td class="paramname">size</td><td>Key data size in bytes</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Computed hash value </dd></dl>
-
-</div>
-</div>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li><a class="el" href="hashtable__api_8h_source.html">hashtable_api.h</a></li>
 </ul>
 </div><!-- contents -->

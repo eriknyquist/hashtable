@@ -91,6 +91,8 @@ Typedefs</h2></td></tr>
 <tr class="memitem:acab608df8c32a0ef8e8c6fe0cfab1208"><td class="memItemLeft" align="right" valign="top"><a id="acab608df8c32a0ef8e8c6fe0cfab1208" name="acab608df8c32a0ef8e8c6fe0cfab1208"></a>
 typedef size_t&#160;</td><td class="memItemRight" valign="bottom"><b>hashtable_size_t</b></td></tr>
 <tr class="separator:acab608df8c32a0ef8e8c6fe0cfab1208"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae5b1c880a0fa4f6078447faca248b254"><td class="memItemLeft" align="right" valign="top">typedef uint32_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable__api_8h.html#ae5b1c880a0fa4f6078447faca248b254">hashtable_hashfunc_t</a>) (const void *data, const hashtable_size_t size)</td></tr>
+<tr class="separator:ae5b1c880a0fa4f6078447faca248b254"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -118,7 +120,31 @@ Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Implements a lightweight separate-chaining hashtable designed to be flexible enough for embedded systems. </p>
 <dl class="section author"><dt>Author</dt><dd>Erik K. Nyquist </dd></dl>
-</div><h2 class="groupheader">Function Documentation</h2>
+</div><h2 class="groupheader">Typedef Documentation</h2>
+<a id="ae5b1c880a0fa4f6078447faca248b254" name="ae5b1c880a0fa4f6078447faca248b254"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae5b1c880a0fa4f6078447faca248b254">&#9670;&nbsp;</a></span>hashtable_hashfunc_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef uint32_t(* hashtable_hashfunc_t) (const void *data, const hashtable_size_t size)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Hash function used for hashing key data</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">data</td><td>Pointer to key data </td></tr>
+    <tr><td class="paramname">size</td><td>Key data size in bytes</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Computed hash value </dd></dl>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
 <a id="a3c093157186aa6d372cb406b3c2c1158" name="a3c093157186aa6d372cb406b3c2c1158"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3c093157186aa6d372cb406b3c2c1158">&#9670;&nbsp;</a></span>hashtable_bytes_remaining()</h2>
 

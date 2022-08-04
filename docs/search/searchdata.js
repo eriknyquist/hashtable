@@ -1,11 +1,12 @@
 var indexSectionsWithContent =
 {
-  0: "acdehit",
+  0: "acdeht",
   1: "h",
   2: "h",
   3: "h",
-  4: "acdehit",
-  5: "a"
+  4: "acdeht",
+  5: "h",
+  6: "a"
 };
 
 var indexSectionNames =
@@ -15,7 +16,8 @@ var indexSectionNames =
   2: "files",
   3: "functions",
   4: "variables",
-  5: "pages"
+  5: "typedefs",
+  6: "pages"
 };
 
 var indexSectionLabels =
@@ -25,6 +27,7 @@ var indexSectionLabels =
   2: "Files",
   3: "Functions",
   4: "Variables",
-  5: "Pages"
+  5: "Typedefs",
+  6: "Pages"
 };
 
