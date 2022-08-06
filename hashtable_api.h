@@ -22,8 +22,7 @@
  *   in a buffer that must be provided by the caller on hashtable creation,
  *   and when there is not enough space remaining in that buffer, insertion of new
  *   items will fail.
- * - Provide/write your own hash function (although a default hash function, optimized
- *   for ASCII strings, is provided).
+ * - Provide/write your own hash function (FNV-1a is used by default if you don't provide one).
  *
  * \section buildopts_sec Build/compile options
  *
@@ -274,8 +273,8 @@ int hashtable_reset_cursor(hashtable_t *table);
 
 
 /**
- * Populate a configuration structure, using a basic default hash function
- * optimized for ASCII strings, and an array count optimized for the given size.
+ * Populate a configuration structure with the default hash function (FNV-1a), and
+ * an array count optimized for the given buffer size.
  *
  * @param config       Pointer to configuration data structure to populate
  * @param buffer_size  Buffer size to generate configuration for

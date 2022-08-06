@@ -42,19 +42,20 @@ static char _error_msg[MAX_ERROR_MSG_SIZE]  = {'\0'};
 
 
 // Default hash function
-static uint32_t _default_hash(const char *data, const hashtable_size_t size)
+static uint32_t _fnv1a_hash(const char *data, const hashtable_size_t size)
 {
-    static const uint32_t magic_multiplier = 37u;
-    uint8_t *u8_data = (uint8_t *) data;
-    uint32_t ret = 0u;
+    // Constants taken from:
+    // https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
+    const uint32_t fnv32_prime = 0x01000193u;
+    uint32_t hash = 0x811c9dc5u;
 
     for (hashtable_size_t i = 0u; i < size; i++)
     {
-        ret = magic_multiplier * ret + u8_data[i];
+        hash ^= (uint32_t) data[i];
+        hash *= fnv32_prime;
     }
 
-    ret += (ret >> 5u);
-    return ret;
+    return hash;
 }
 
 
@@ -726,7 +727,7 @@ int hashtable_default_config(hashtable_config_t *config, size_t buffer_size)
     }
 #endif // HASHTABLE_DISABLE_PARAM_VALIDATION
 
-    config->hash = _default_hash;
+    config->hash = _fnv1a_hash;
 
     /* We either want an array count that results in a table that takes up
      * roughly 10% of the buffer size, or an array count of at least 10-- whichever

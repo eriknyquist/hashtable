@@ -293,7 +293,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Populate a configuration structure, using a basic default hash function optimized for ASCII strings, and an array count optimized for the given size.</p>
+<p >Populate a configuration structure with the default hash function (FNV-1a), and an array count optimized for the given buffer size.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">config</td><td>Pointer to configuration data structure to populate </td></tr>
@@ -418,8 +418,8 @@ Functions</h2></td></tr>
     <tr><td class="paramname">table</td><td>Pointer to hashtable instance </td></tr>
     <tr><td class="paramname">key</td><td>Pointer to key data </td></tr>
     <tr><td class="paramname">key_size</td><td>Key data size in bytes </td></tr>
-    <tr><td class="paramname">value</td><td>Pointer to value data </td></tr>
-    <tr><td class="paramname">value_size</td><td>Value data size in bytes</td></tr>
+    <tr><td class="paramname">value</td><td>Pointer to value data, may be NULL </td></tr>
+    <tr><td class="paramname">value_size</td><td>Value data size in bytes, may be 0</td></tr>
   </table>
   </dd>
 </dl>
@@ -476,8 +476,8 @@ Functions</h2></td></tr>
     <tr><td class="paramname">table</td><td>Pointer to hashtable instance </td></tr>
     <tr><td class="paramname">key</td><td>Pointer to location to store key pointer </td></tr>
     <tr><td class="paramname">key_size</td><td>Pointer to location to store key data size in bytes </td></tr>
-    <tr><td class="paramname">value</td><td>Pointer to location to store value pointer </td></tr>
-    <tr><td class="paramname">value_size</td><td>Pointer to location to store value data size in bytes</td></tr>
+    <tr><td class="paramname">value</td><td>Pointer to location to store value pointer, may be NULL </td></tr>
+    <tr><td class="paramname">value_size</td><td>Pointer to location to store value data size in bytes, may be NULL</td></tr>
   </table>
   </dd>
 </dl>
@@ -604,8 +604,8 @@ Functions</h2></td></tr>
     <tr><td class="paramname">table</td><td>Pointer to hashtable instance </td></tr>
     <tr><td class="paramname">key</td><td>Pointer to key data </td></tr>
     <tr><td class="paramname">key_size</td><td>Key data size in bytes </td></tr>
-    <tr><td class="paramname">value</td><td>Pointer to location to store value pointer </td></tr>
-    <tr><td class="paramname">value_size</td><td>Pointer to location to store value size</td></tr>
+    <tr><td class="paramname">value</td><td>Pointer to location to store value pointer, may be NULL </td></tr>
+    <tr><td class="paramname">value_size</td><td>Pointer to location to store value size, may be NULL</td></tr>
   </table>
   </dd>
 </dl>
