@@ -14,13 +14,13 @@
 #define MAX_LOG_MSG_SIZE (256u)
 
 // Min. size of a randomly-generated key or value
-#define MIN_STR_LEN (32u)
+#define MIN_STR_LEN (16u)
 
 // Max. size of a randomly-generated key or value
-#define MAX_STR_LEN (64u)
+#define MAX_STR_LEN (32u)
 
 // Number of randomly-generated items to insert into table
-#define ITEM_INSERT_COUNT (4000000u)
+#define ITEM_INSERT_COUNT (7000000u)
 
 
 #if defined(_WIN32)
@@ -226,7 +226,7 @@ int main(void)
 
     _log("Buffer size %s\n", bufsize_buf);
     _log("%s of buffer is used for table array\n", tablesize_buf);
-    _log("%s of buffer remains to be used for key/value data\n", rmsize_buf);
+    _log("%s of buffer remains for key/value data\n", rmsize_buf);
 
 	char itemcount_str[64u];
 	_fmt_int_with_commas((long) ITEM_INSERT_COUNT, itemcount_str);
