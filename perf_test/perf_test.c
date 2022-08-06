@@ -223,13 +223,15 @@ int main(void)
     (void) sizesprint(sizeof(_buffer) - bytes_available, tablesize_buf, sizeof(tablesize_buf));
 
     printf("\nhashtable performance smoke test (hashtable "HASHTABLE_LIB_VERSION")\n\n");
-    _log("Buffer size %s, %s used for table array, %s remaining for key/value pair data\n",
-         bufsize_buf, tablesize_buf, rmsize_buf);
+
+    _log("Buffer size %s\n", bufsize_buf);
+    _log("%s of buffer is used for table array\n", tablesize_buf);
+    _log("%s of buffer remains to be used for key/value data\n", rmsize_buf);
 
 	char itemcount_str[64u];
 	_fmt_int_with_commas((long) ITEM_INSERT_COUNT, itemcount_str);
 
-    _log("Generating %s random key/value pairs, all keys and values are between %u-%u bytes in size\n",
+    _log("Generating %s random key/value pairs, all keys/values are %u-%u bytes in size\n",
          itemcount_str, MIN_STR_LEN, MAX_STR_LEN);
 
     for (uint32_t i = 0u; i < ITEM_INSERT_COUNT; i++)
@@ -238,7 +240,12 @@ int main(void)
         _rand_str(_test_pairs[i].value, &_test_pairs[i].value_size);
     }
 
-    _log("Inserting all %s items into the table\n", itemcount_str);
+    _log("first key   : %s\n", _test_pairs[0].key);
+    _log("first value : %s\n", _test_pairs[0].value);
+    _log("last key    : %s\n", _test_pairs[ITEM_INSERT_COUNT - 1].key);
+    _log("last value  : %s\n", _test_pairs[ITEM_INSERT_COUNT - 1].value);
+
+    _log("Inserting all %s key/value pairs into the table\n", itemcount_str);
 
     uint64_t total_insert_us = 0u;
     uint64_t longest_insert_us = 0u;
