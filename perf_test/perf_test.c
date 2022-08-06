@@ -23,9 +23,6 @@
 // Number of randomly-generated items to insert into table
 #define ITEM_INSERT_COUNT (4000000u)
 
-// Number of slots in the hashtable
-#define INITIAL_ARRAY_COUNT (1000000u)
-
 
 #if defined(_WIN32)
 #include <Windows.h>
@@ -288,7 +285,7 @@ int main(void)
     char slotsused_str[64u];
     char totalslots_str[64u];
     _fmt_int_with_commas((long) _table.array_slots_used, slotsused_str);
-    _fmt_int_with_commas((long) INITIAL_ARRAY_COUNT, totalslots_str);
+    _fmt_int_with_commas((long) _table.config.array_count, totalslots_str);
     _log("All items inserted, %s remaining, %s/%s array slots used\n",
          rmsize_buf, slotsused_str, totalslots_str);
 
@@ -352,9 +349,10 @@ int main(void)
 
     double avg_remove_us = ((double) total_remove_us) / ((double) ITEM_INSERT_COUNT);
 
-    // Verify all remove items are indeed removed, according to hashtable_has_key
-    _log("All items removed via hashtable_remove\n");
+    _fmt_int_with_commas((long) _table.array_slots_used, slotsused_str);
+    _log("All items removed via hashtable_remove, %s/%s array slots used\n", slotsused_str, totalslots_str);
 
+    // Verify all remove items are indeed removed, according to hashtable_has_key
     for (uint32_t i = 0u; i < ITEM_INSERT_COUNT; i++)
     {
         if (hashtable_has_key(&_table, _test_pairs[i].key, _test_pairs[i].key_size))
@@ -391,6 +389,9 @@ int main(void)
     }
 
     double avg_after_insert_us = ((double) total_after_insert_us) / ((double) ITEM_INSERT_COUNT);
+
+    _fmt_int_with_commas((long) _table.array_slots_used, slotsused_str);
+    _log("All items re-inserted, %s/%s array slots used\n", slotsused_str, totalslots_str);
 
     _log("Done\n");
 

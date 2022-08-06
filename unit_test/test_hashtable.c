@@ -201,8 +201,14 @@ void test_hashtable_create_zero_array_count(void)
 // Tests that hashtable_create returns an error when buffer size is too small
 void test_hashtable_create_buffer_size_too_small(void)
 {
+    const uint32_t array_count = 10u;
+    hashtable_config_t config;
+    TEST_ASSERT_EQUAL(0, hashtable_default_config(&config, 0xffffu));
+    config.array_count = array_count;
+
+    uint8_t buf[HASHTABLE_MIN_BUFFER_SIZE(array_count) - 1u];
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(-1, hashtable_create(&table, NULL, _buffer, 2u));
+    TEST_ASSERT_EQUAL_INT(-1, hashtable_create(&table, &config, buf, sizeof(buf)));
 }
 
 
@@ -770,6 +776,25 @@ void test_hashtable_bytes_remaining_overwrite_largervalue(void)
 }
 
 
+// Tests that hashtable_create succeeds with min. buffer size, but first item insertion fails
+void test_hashtable_create_minimum_buffer_size(void)
+{
+    const uint32_t array_count = 10u;
+    hashtable_config_t config;
+    TEST_ASSERT_EQUAL(0, hashtable_default_config(&config, 0xffffu));
+    config.array_count = array_count;
+
+    uint8_t buf[HASHTABLE_MIN_BUFFER_SIZE(array_count)];
+    hashtable_t table;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, &config, buf, sizeof(buf)));
+
+    char key[1];
+    char value[1];
+
+    TEST_ASSERT_EQUAL_INT(1, hashtable_insert(&table, key, sizeof(key), value, sizeof(value)));
+}
+
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -811,6 +836,7 @@ int main(void)
     RUN_TEST(test_hashtable_bytes_remaining_overwrite_samesizevalue);
     RUN_TEST(test_hashtable_bytes_remaining_overwrite_smallervalue);
     RUN_TEST(test_hashtable_bytes_remaining_overwrite_largervalue);
+    RUN_TEST(test_hashtable_create_minimum_buffer_size);
 
     return UNITY_END();
 }
