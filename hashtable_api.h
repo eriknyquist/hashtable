@@ -159,8 +159,9 @@ typedef struct
  * @param buffer       Pointer to buffer to use for hashtable data
  * @param buffer_size  Size of buffer in bytes
  *
- * @return   0 if successful, -1 if an error occurred. Use #hashtable_error_message
- *           to get an error message if -1 is returned.
+ * @return   0 if successful, 1 if buffer size is not large enough, and -1 if an
+ *           error occurred. Use #hashtable_error_message to get an error message
+ *           if -1 is returned.
  */
 int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
                      void *buffer, size_t buffer_size);

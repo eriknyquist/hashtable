@@ -208,7 +208,7 @@ void test_hashtable_create_buffer_size_too_small(void)
 
     uint8_t buf[HASHTABLE_MIN_BUFFER_SIZE(array_count) - 1u];
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(-1, hashtable_create(&table, &config, buf, sizeof(buf)));
+    TEST_ASSERT_EQUAL_INT(1, hashtable_create(&table, &config, buf, sizeof(buf)));
 }
 
 

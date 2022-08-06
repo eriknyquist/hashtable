@@ -206,8 +206,7 @@ static int _setup_new_table(hashtable_t *table, uint32_t array_count, void *buff
 
     if (buffer_size < min_required_size)
     {
-        ERROR("Allocated size is too small");
-        return -1;
+        return 1;
     }
 
     uint8_t *u8_ret = (uint8_t *) buffer;
@@ -465,9 +464,10 @@ int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
     }
 #endif // HASHTABLE_DISABLE_PARAM_VALIDATION
 
-    if (_setup_new_table(table, table->config.array_count, buffer, buffer_size) < 0)
+    int ret = _setup_new_table(table, table->config.array_count, buffer, buffer_size);
+    if (0 != ret)
     {
-        return -1;
+        return ret;
     }
 
     table->array_slots_used = 0u;
