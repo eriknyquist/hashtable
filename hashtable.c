@@ -22,10 +22,12 @@
  */
 #define ERROR(msg) ((void) strncpy(_error_msg, msg, sizeof(_error_msg)))
 
+
 /**
- * New tables must have at least this much space available for data
+ * If there is enough space, we will try to size the table array to
+ * occupy this percentage of the buffer provided for a hashtable
  */
-#define MIN_REQUIRED_DATA_SIZE (128u)
+#define IDEAL_BUFFER_TABLE_PERCENT (8u)
 
 
 /**
@@ -34,100 +36,6 @@
  */
 #define ARRAY_SIZE_BYTES(array_count) \
     (((array_count) * sizeof(_keyval_pair_list_t)) + sizeof(_keyval_pair_list_table_t))
-
-
-#ifdef HASHTABLE_PACKED_STRUCT
-#define _HASHTABLE_PACKED __attribute__((packed))
-#else
-#define _HASHTABLE_PACKED
-#endif // HASHTABLE_PACKED_STRUCT
-
-
-/**
- * Represents a single key/value pair stored in the data block area of a table instance.
- * Also represents a single node in a singly-linked list of key/value pairs.
- */
-typedef struct _keyval_pair
-{
-    struct _keyval_pair *next;    ///< Pointer to next key/val pair in the list
-    hashtable_size_t key_size;    ///< Size of key data in bytes
-    hashtable_size_t value_size;  ///< Size of value data in bytes
-    uint8_t data[];               ///< Start of key + value data packed together
-} _HASHTABLE_PACKED _keyval_pair_t;
-
-
-/**
- * Represents a singly-linked list of key/value pairs
- */
-typedef struct
-{
-    _keyval_pair_t *head;  ///< Head (first) item
-    _keyval_pair_t *tail;  ///< Tail (last) item
-} _keyval_pair_list_t;
-
-
-/**
- * Represents the area where key/val pair data is stored
- */
-typedef struct
-{
-    _keyval_pair_list_t freelist;  ///< List of freed key/value pairs
-    size_t total_bytes;            ///< Total bytes available for key/value pair data
-    size_t bytes_used;             ///< Total bytes used (including freed) by key/value pair data
-    uint8_t data[];                ///< Pointer to key/value data section, size not known at compile time
-} _keyval_pair_data_block_t;
-
-
-/**
- * Represents a table of singly-linked lists of key-value pair
- */
-typedef struct
-{
-    uint32_t array_count;          ///< Number of _keyval_pair_list_t slots in the array
-    _keyval_pair_list_t table[];   ///< Pointer to first slot in table
-} _keyval_pair_list_table_t;
-
-
-/**
- * First section in the table->table_data field, holds some misc. housekeeping data.
- *
- * table->table_data layout/format:
- *
- * The table->table_data field points to the buffer area passed to 'hashtable_create',
- * and contains the following data:
- *
- *  +-----------------------------+ <--- Lowest address of table->table_data
- *  |                             |
- *  | _keyval_pair_table_data_t   |
- *  |                             |
- *  +-----------------------------+
- *  |                             |
- *  | _keyval_pair_list_table_t   |
- *  |                             |
- *  +-----------------------------+
- *  |                             |
- *  | _keyval_pair_list_t table[] |
- *  | array items                 |
- *  |                             |
- *  +-----------------------------+
- *  |                             |
- *  | _keyval_pair_data_block_t   |
- *  |                             |
- *  +-----------------------------+
- *  |                             |
- *  | data block data[] section   |
- *  |                             |
- *  +-----------------------------+
- */
-typedef struct
-{
-    _keyval_pair_list_table_t *list_table;  ///< Convenience pointer to table array
-    _keyval_pair_data_block_t *data_block;  ///< Convenience pointer to key/val data block
-    uint32_t cursor_array_index;            ///< Cursor current table index for iteration
-    uint32_t cursor_items_traversed;        ///< Number of items traversed by cursor
-    _keyval_pair_t *cursor_item;            ///< Cursor current item pointer for iteration
-    uint8_t cursor_limit;                   ///< Set to 1 when all items have been iterated through
-} _keyval_pair_table_data_t;
 
 
 static char _error_msg[MAX_ERROR_MSG_SIZE]  = {'\0'};
@@ -148,9 +56,6 @@ static uint32_t _default_hash(const char *data, const hashtable_size_t size)
     ret += (ret >> 5u);
     return ret;
 }
-
-// Default hashtable_config_t data
-static hashtable_config_t _default_config = {_default_hash, 64u};
 
 
 /**
@@ -292,8 +197,7 @@ static _keyval_pair_t *_store_keyval_pair(hashtable_t *table, const char *key, c
 static int _setup_new_table(hashtable_t *table, uint32_t array_count, void *buffer, size_t buffer_size)
 {
     size_t array_size = ARRAY_SIZE_BYTES(array_count);
-    size_t min_required_size = sizeof(_keyval_pair_table_data_t) + array_size +
-                               sizeof(_keyval_pair_data_block_t) + MIN_REQUIRED_DATA_SIZE;
+    size_t min_required_size = HASHTABLE_MIN_BUFFER_SIZE(array_count);
 
     if (buffer_size < min_required_size)
     {
@@ -322,7 +226,7 @@ static int _setup_new_table(hashtable_t *table, uint32_t array_count, void *buff
     // Initialize key/pair value data block
     td->data_block->freelist.head = NULL;
     td->data_block->freelist.tail = NULL;
-    td->data_block->total_bytes = buffer_size - (min_required_size - MIN_REQUIRED_DATA_SIZE);
+    td->data_block->total_bytes = buffer_size - min_required_size;
     td->data_block->bytes_used = 0u;
 
     return 0;
@@ -520,28 +424,39 @@ int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
                      void *buffer, size_t buffer_size)
 {
 #ifndef HASHTABLE_DISABLE_PARAM_VALIDATION
-    if ((NULL == table) || (NULL == config))
+    if (NULL == table)
     {
         ERROR("NULL pointer passed to function");
         return -1;
     }
 
-    if (NULL == config->hash)
+    if (NULL == config)
     {
-        ERROR("NULL function pointer in hashtable_config_t");
-        return -1;
+        // No config provided, use default config
+        if (0 > hashtable_default_config(&table->config, buffer_size))
+        {
+            return -1;
+        }
     }
-
-    if (0u == config->array_count)
+    else
     {
-        ERROR("Zero array count in hashtable_config_t");
-        return -1;
+        if (NULL == config->hash)
+        {
+            ERROR("NULL function pointer in hashtable_config_t");
+            return -1;
+        }
+
+        if (0u == config->array_count)
+        {
+            ERROR("Zero array count in hashtable_config_t");
+            return -1;
+        }
+
+        (void) memcpy(&table->config, config, sizeof(table->config));
     }
 #endif // HASHTABLE_DISABLE_PARAM_VALIDATION
 
-    (void) memcpy(&table->config, config, sizeof(table->config));
-
-    if (_setup_new_table(table, config->array_count, buffer, buffer_size) < 0)
+    if (_setup_new_table(table, table->config.array_count, buffer, buffer_size) < 0)
     {
         return -1;
     }
@@ -786,9 +701,36 @@ int hashtable_reset_cursor(hashtable_t *table)
 /**
  * @see hashtable_api.h
  */
-hashtable_config_t *hashtable_default_config(void)
+int hashtable_default_config(hashtable_config_t *config, size_t buffer_size)
 {
-    return &_default_config;
+#ifndef HASHTABLE_DISABLE_PARAM_VALIDATION
+    if (NULL == config)
+    {
+        ERROR("NULL pointer passed to function");
+        return -1;
+    }
+#endif // HASHTABLE_DISABLE_PARAM_VALIDATION
+
+    config->hash = _default_hash;
+
+    /* We either want an array count that results in a table that takes up
+     * roughly 10% of the buffer size, or an array count of at least 10-- whichever
+     * takes up the most bytes in the buffer. */
+    size_t buf_min_size = (buffer_size * IDEAL_BUFFER_TABLE_PERCENT) / 100u; // Ideal % of buffer size
+    size_t array_min_size = ARRAY_SIZE_BYTES(HASHTABLE_MIN_ARRAY_COUNT);               // Size of an array with min. elements
+
+    if (buf_min_size > array_min_size)
+    {
+        // Figure out the array count that is closest to the ideal % of the buffer size
+        config->array_count = ((buf_min_size - sizeof(_keyval_pair_list_table_t)) / sizeof(_keyval_pair_list_t)) + 1u;
+    }
+    else
+    {
+        // Best array size is HASHTABLE_MIN_ARRAY_COUNT
+        config->array_count = HASHTABLE_MIN_ARRAY_COUNT;
+    }
+
+    return 0;
 }
 
 

@@ -9,6 +9,7 @@
 
 // Size of statically-allocated buffer passed to hashtable_create
 #define BUFFER_SIZE (1024 * 1024 * 400)
+//#define BUFFER_SIZE (1024)
 
 // Log messages printed to stdout can't be larger than this
 #define MAX_LOG_MSG_SIZE (256u)
@@ -20,7 +21,7 @@
 #define MAX_STR_LEN (32u)
 
 // Number of randomly-generated items to insert into table
-#define ITEM_INSERT_COUNT (5000000u)
+#define ITEM_INSERT_COUNT (4000000u)
 
 // Number of slots in the hashtable
 #define INITIAL_ARRAY_COUNT (1000000u)
@@ -203,11 +204,7 @@ int main(void)
     _start_us = timing_usecs_elapsed();
     srand((unsigned int) _start_us);
 
-    hashtable_config_t config;
-    (void) memcpy(&config, hashtable_default_config(), sizeof(config));
-    config.array_count = INITIAL_ARRAY_COUNT;
-
-    if (hashtable_create(&_table, &config, _buffer, sizeof(_buffer)) < 0)
+    if (hashtable_create(&_table, NULL, _buffer, sizeof(_buffer)) < 0)
     {
         printf("%s\n", hashtable_error_message());
         return -1;
@@ -253,10 +250,17 @@ int main(void)
     for (uint32_t i = 0u; i < ITEM_INSERT_COUNT; i++)
     {
         uint64_t startus = timing_usecs_elapsed();
-        if (0 > hashtable_insert(&_table, _test_pairs[i].key, _test_pairs[i].key_size,
-                                _test_pairs[i].value, _test_pairs[i].value_size))
+        int ret = hashtable_insert(&_table, _test_pairs[i].key, _test_pairs[i].key_size,
+                                   _test_pairs[i].value, _test_pairs[i].value_size);
+
+        if (-1 == ret)
         {
             printf("%s\n", hashtable_error_message());
+            return -1;
+        }
+        else if (1 == ret)
+        {
+            printf("No more space in buffer\n");
             return -1;
         }
 

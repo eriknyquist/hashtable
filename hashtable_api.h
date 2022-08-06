@@ -100,6 +100,24 @@ typedef size_t hashtable_size_t;
 
 
 /**
+ * @brief Minimum number of slots in the table array
+ */
+#define HASHTABLE_MIN_ARRAY_COUNT (10u)
+
+
+/**
+ * @brief Helper macro, gets the min. required buffer size for a specific array count.
+ *        When creating a hashtable with a specific array count, this macro will tell
+ *        you how much memory is required at a minimum to hold the 'housekeeping' data
+ *        for that table. Any remaining space is used for key/value pair data storage.
+ */
+#define HASHTABLE_MIN_BUFFER_SIZE(array_count)                                 \
+    (sizeof(_keyval_pair_table_data_t) + sizeof(_keyval_pair_list_table_t) +   \
+    ((array_count) * sizeof(_keyval_pair_list_t)) +                            \
+    sizeof(_keyval_pair_data_block_t))
+
+
+/**
  * Hash function used for hashing key data
  *
  * @param data   Pointer to key data
@@ -137,7 +155,8 @@ typedef struct
  * Initialize a new hashtable instance
  *
  * @param table        Pointer to hashtable instance
- * @param config       Pointer to hashtable configuration data
+ * @param config       Pointer to hashtable configuration data. May be NULL.
+ *                     If NULL, a default general-purpose configuration will be used.
  * @param buffer       Pointer to buffer to use for hashtable data
  * @param buffer_size  Size of buffer in bytes
  *
@@ -255,12 +274,16 @@ int hashtable_reset_cursor(hashtable_t *table);
 
 
 /**
- * Get a pointer to a default configuration structure, using a basic default hash function
- * optimized for ASCII strings, and an initial array count of 64.
+ * Populate a configuration structure, using a basic default hash function
+ * optimized for ASCII strings, and an array count optimized for the given size.
  *
- * @return  Pointer to default configuration data
+ * @param config       Pointer to configuration data structure to populate
+ * @param buffer_size  Buffer size to generate configuration for
+ *
+ * @return   0 if successful, -1 if an error occurred. Use #hashtable_error_message
+ *           to get an error message.
  */
-hashtable_config_t *hashtable_default_config(void);
+int hashtable_default_config(hashtable_config_t *config, size_t buffer_size);
 
 
 /**
@@ -272,5 +295,103 @@ hashtable_config_t *hashtable_default_config(void);
  * @return  Pointer to error message string
  */
 char *hashtable_error_message(void);
+
+
+/**
+ * Private definitions-- not strictly needed in the public API, but required for
+ * the #HASHTABLE_MIN_BUFFER_SIZE macro definition.
+ */
+#ifdef HASHTABLE_PACKED_STRUCT
+#define _HASHTABLE_PACKED __attribute__((packed))
+#else
+#define _HASHTABLE_PACKED
+#endif // HASHTABLE_PACKED_STRUCT
+
+
+/**
+ * Represents a single key/value pair stored in the data block area of a table instance.
+ * Also represents a single node in a singly-linked list of key/value pairs.
+ */
+typedef struct _keyval_pair
+{
+    struct _keyval_pair *next;    ///< Pointer to next key/val pair in the list
+    hashtable_size_t key_size;    ///< Size of key data in bytes
+    hashtable_size_t value_size;  ///< Size of value data in bytes
+    uint8_t data[];               ///< Start of key + value data packed together
+} _HASHTABLE_PACKED _keyval_pair_t;
+
+
+/**
+ * Represents a singly-linked list of key/value pairs
+ */
+typedef struct
+{
+    _keyval_pair_t *head;  ///< Head (first) item
+    _keyval_pair_t *tail;  ///< Tail (last) item
+} _keyval_pair_list_t;
+
+
+/**
+ * Represents the area where key/val pair data is stored
+ */
+typedef struct
+{
+    _keyval_pair_list_t freelist;  ///< List of freed key/value pairs
+    size_t total_bytes;            ///< Total bytes available for key/value pair data
+    size_t bytes_used;             ///< Total bytes used (including freed) by key/value pair data
+    uint8_t data[];                ///< Pointer to key/value data section, size not known at compile time
+} _keyval_pair_data_block_t;
+
+
+/**
+ * Represents a table of singly-linked lists of key-value pair
+ */
+typedef struct
+{
+    uint32_t array_count;          ///< Number of _keyval_pair_list_t slots in the array
+    _keyval_pair_list_t table[];   ///< Pointer to first slot in table
+} _keyval_pair_list_table_t;
+
+
+/**
+ * First section in the table->table_data field, holds some misc. housekeeping data.
+ *
+ * table->table_data layout/format:
+ *
+ * The table->table_data field points to the buffer area passed to 'hashtable_create',
+ * and contains the following data:
+ *
+ *  +-----------------------------+ <--- Lowest address of table->table_data
+ *  |                             |
+ *  | _keyval_pair_table_data_t   |
+ *  |                             |
+ *  +-----------------------------+
+ *  |                             |
+ *  | _keyval_pair_list_table_t   |
+ *  |                             |
+ *  +-----------------------------+
+ *  |                             |
+ *  | _keyval_pair_list_t table[] |
+ *  | array items                 |
+ *  |                             |
+ *  +-----------------------------+
+ *  |                             |
+ *  | _keyval_pair_data_block_t   |
+ *  |                             |
+ *  +-----------------------------+
+ *  |                             |
+ *  | data block data[] section   |
+ *  |                             |
+ *  +-----------------------------+
+ */
+typedef struct
+{
+    _keyval_pair_list_table_t *list_table;  ///< Convenience pointer to table array
+    _keyval_pair_data_block_t *data_block;  ///< Convenience pointer to key/val data block
+    uint32_t cursor_array_index;            ///< Cursor current table index for iteration
+    uint32_t cursor_items_traversed;        ///< Number of items traversed by cursor
+    _keyval_pair_t *cursor_item;            ///< Cursor current item pointer for iteration
+    uint8_t cursor_limit;                   ///< Set to 1 when all items have been iterated through
+} _keyval_pair_table_data_t;
 
 #endif // HASHTABLE_API_H

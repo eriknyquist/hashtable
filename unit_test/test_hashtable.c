@@ -170,15 +170,7 @@ void tearDown(void)
 // Tests that hashtable_create returns an error when null table is passed
 void test_hashtable_create_null_table(void)
 {
-    TEST_ASSERT_EQUAL_INT(-1, hashtable_create(NULL, hashtable_default_config(), _buffer, sizeof(_buffer)));
-}
-
-
-// Tests that hashtable_create returns an error when null config is passed
-void test_hashtable_create_null_config(void)
-{
-    hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(-1, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(-1, hashtable_create(NULL, NULL, _buffer, sizeof(_buffer)));
 }
 
 
@@ -197,8 +189,8 @@ void test_hashtable_create_zero_array_count(void)
     hashtable_t table;
     hashtable_config_t config;
 
-    // Make a copy of the default config
-    (void) memcpy(&config, hashtable_default_config(), sizeof(config));
+    //  Get a default config
+    TEST_ASSERT_EQUAL_INT(0, hashtable_default_config(&config, sizeof(_buffer)));
 
     config.array_count = 0u;
 
@@ -210,7 +202,7 @@ void test_hashtable_create_zero_array_count(void)
 void test_hashtable_create_buffer_size_too_small(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(-1, hashtable_create(&table, hashtable_default_config(), _buffer, 2u));
+    TEST_ASSERT_EQUAL_INT(-1, hashtable_create(&table, NULL, _buffer, 2u));
 }
 
 
@@ -227,7 +219,7 @@ void test_hashtable_insert_null_table(void)
 void test_hashtable_insert_null_key(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     const char *value = "val1";
     TEST_ASSERT_EQUAL_INT(-1, hashtable_insert(&table, NULL, 4u, value, 4u));
@@ -238,7 +230,7 @@ void test_hashtable_insert_null_key(void)
 void test_hashtable_insert_null_value(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     const char *key = "key1";
     TEST_ASSERT_EQUAL_INT(-1, hashtable_insert(&table, key, 4u, NULL, 4u));
@@ -249,7 +241,7 @@ void test_hashtable_insert_null_value(void)
 void test_hashtable_insert_zero_key_size(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     const char *key = "key1";
     const char *value = "val1";
@@ -261,7 +253,7 @@ void test_hashtable_insert_zero_key_size(void)
 void test_hashtable_insert_zero_value_size(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     const char *key = "key1";
     const char *value = "val1";
@@ -281,7 +273,7 @@ void test_hashtable_remove_null_table(void)
 void test_hashtable_remove_null_key(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     TEST_ASSERT_EQUAL_INT(-1, hashtable_remove(&table, NULL, 4u));
 }
@@ -291,7 +283,7 @@ void test_hashtable_remove_null_key(void)
 void test_hashtable_remove_zero_key_size(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     const char *key = "key1";
     TEST_ASSERT_EQUAL_INT(-1, hashtable_remove(&table, key, 0u));
@@ -312,7 +304,7 @@ void test_hashtable_retrieve_null_table(void)
 void test_hashtable_retrieve_null_key(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     char *value;
     size_t value_size;
@@ -324,7 +316,7 @@ void test_hashtable_retrieve_null_key(void)
 void test_hashtable_retrieve_null_value(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     const char *key = "key1";
     size_t value_size;
@@ -344,7 +336,7 @@ void test_hashtable_has_key_null_table(void)
 void test_hashtable_has_key_null_key(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     TEST_ASSERT_EQUAL_INT(-1, hashtable_has_key(&table, NULL, 4u));
 }
@@ -362,7 +354,7 @@ void test_hashtable_bytes_remaining_null_table(void)
 void test_hashtable_bytes_remaining_null_key(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     TEST_ASSERT_EQUAL_INT(-1, hashtable_bytes_remaining(&table, NULL));
 }
@@ -383,7 +375,7 @@ void test_hashtable_next_item_null_table(void)
 void test_hashtable_next_item_null_key(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     char *value;
     size_t key_size;
@@ -396,7 +388,7 @@ void test_hashtable_next_item_null_key(void)
 void test_hashtable_next_item_null_value(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     char *key;
     size_t key_size;
@@ -418,7 +410,7 @@ void test_hashtable_insert_buffer_full(void)
     uint8_t test_buf[512];
 
     hashtable_config_t config;
-    (void) memcpy(&config, hashtable_default_config(), sizeof(config));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_default_config(&config, sizeof(_buffer)));
     config.array_count = 1u;
 
     hashtable_t table;
@@ -457,7 +449,7 @@ void test_hashtable_insert_buffer_full(void)
 void test_hashtable_retrieve_no_such_key(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     char key1[128u];  // This key will be inserted
     char key2[128u];  // This key will not be inserted
@@ -481,7 +473,7 @@ void test_hashtable_retrieve_no_such_key(void)
 void test_hashtable_remove_no_such_key(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     char key1[128u];  // This key will be inserted
     char key2[128u];  // This key will not be inserted
@@ -503,7 +495,7 @@ void test_hashtable_remove_no_such_key(void)
 void test_hashtable_insert1000items(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     const unsigned int num_items = 1000;
     _test_keyval_pair_t pairs[num_items];
@@ -519,7 +511,7 @@ void test_hashtable_insert1000items(void)
 void test_hashtable_insert1000items_remove500(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     const unsigned int num_items = 1000;
     _test_keyval_pair_t pairs[num_items];
@@ -537,7 +529,7 @@ void test_hashtable_insert1000items_remove500(void)
 void test_hashtable_next_item_iterate1000items(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     const unsigned int num_items = 1000;
     _test_keyval_pair_t pairs[num_items];
@@ -555,7 +547,7 @@ void test_hashtable_next_item_iterate1000items(void)
 void test_hashtable_next_item_iterate1000items_remove500(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     const unsigned int num_items = 1000;
     _test_keyval_pair_t pairs[num_items];
@@ -577,7 +569,7 @@ void test_hashtable_next_item_iterate1000items_remove500(void)
 void test_hashtable_bytes_remaining_unchanged_after_reinserting_removed_items(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     const unsigned int num_items = 1000;
     _test_keyval_pair_t pairs[num_items];
@@ -620,7 +612,7 @@ void test_hashtable_bytes_remaining_unchanged_after_reinserting_removed_items(vo
 void test_hashtable_bytes_remaining_overwrite_samesizevalue(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     // Get bytes remaining before inserting anything
     size_t bytes_remaining_1 = 0u;
@@ -674,7 +666,7 @@ void test_hashtable_bytes_remaining_overwrite_samesizevalue(void)
 void test_hashtable_bytes_remaining_overwrite_smallervalue(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     // Get bytes remaining before inserting anything
     size_t bytes_remaining_1 = 0u;
@@ -728,7 +720,7 @@ void test_hashtable_bytes_remaining_overwrite_smallervalue(void)
 void test_hashtable_bytes_remaining_overwrite_largervalue(void)
 {
     hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, hashtable_default_config(), _buffer, sizeof(_buffer)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
 
     // Get bytes remaining before inserting anything
     size_t bytes_remaining_1 = 0u;
@@ -784,7 +776,6 @@ int main(void)
 
     // Boring/necessary input validation tests
     RUN_TEST(test_hashtable_create_null_table);
-    RUN_TEST(test_hashtable_create_null_config);
     RUN_TEST(test_hashtable_create_null_hash_func);
     RUN_TEST(test_hashtable_create_zero_array_count);
     RUN_TEST(test_hashtable_create_buffer_size_too_small);
