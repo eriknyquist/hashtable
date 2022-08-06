@@ -232,17 +232,6 @@ void test_hashtable_insert_null_key(void)
 }
 
 
-// Tests that hashtable_insert returns an error when a NULL value is passed
-void test_hashtable_insert_null_value(void)
-{
-    hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
-
-    const char *key = "key1";
-    TEST_ASSERT_EQUAL_INT(-1, hashtable_insert(&table, key, 4u, NULL, 4u));
-}
-
-
 // Tests that hashtable_insert returns an error when zero is given for key size
 void test_hashtable_insert_zero_key_size(void)
 {
@@ -252,18 +241,6 @@ void test_hashtable_insert_zero_key_size(void)
     const char *key = "key1";
     const char *value = "val1";
     TEST_ASSERT_EQUAL_INT(-1, hashtable_insert(&table, key, 0u, value, 4u));
-}
-
-
-// Tests that hashtable_insert returns an error when zero is given for value size
-void test_hashtable_insert_zero_value_size(void)
-{
-    hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
-
-    const char *key = "key1";
-    const char *value = "val1";
-    TEST_ASSERT_EQUAL_INT(-1, hashtable_insert(&table, key, 4u, value, 0u));
 }
 
 
@@ -315,18 +292,6 @@ void test_hashtable_retrieve_null_key(void)
     char *value;
     size_t value_size;
     TEST_ASSERT_EQUAL_INT(-1, hashtable_retrieve(&table, NULL, 4u, &value, &value_size));
-}
-
-
-// Tests that hashtable_retrieve returns an error when a null value is passed
-void test_hashtable_retrieve_null_value(void)
-{
-    hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
-
-    const char *key = "key1";
-    size_t value_size;
-    TEST_ASSERT_EQUAL_INT(-1, hashtable_retrieve(&table, key, 4u, NULL, &value_size));
 }
 
 
@@ -387,19 +352,6 @@ void test_hashtable_next_item_null_key(void)
     size_t key_size;
     size_t value_size;
     TEST_ASSERT_EQUAL_INT(-1, hashtable_next_item(&table, NULL, &key_size, &value, &value_size));
-}
-
-
-// Tests that hashtable_next_item returns an error when a null value is passed
-void test_hashtable_next_item_null_value(void)
-{
-    hashtable_t table;
-    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
-
-    char *key;
-    size_t key_size;
-    size_t value_size;
-    TEST_ASSERT_EQUAL_INT(-1, hashtable_next_item(&table, &key, &key_size, NULL, &value_size));
 }
 
 
@@ -795,6 +747,94 @@ void test_hashtable_create_minimum_buffer_size(void)
 }
 
 
+// Tests that hashtable_insert/hashtable_retrieve support adding/retrieveing keys only, with value size of 0
+void test_hastable_insert_retrieve_keys_only(void)
+{
+    hashtable_t table;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
+
+    const int numkeys = 12u;
+
+    _test_keyval_pair_t pairs[numkeys];
+
+    // Insert 'numkeys' key/val pairs, with NULL values
+    for (int i = 0; i < numkeys; i++)
+    {
+        _rand_str(pairs[i].key, &pairs[i].key_size);
+        TEST_ASSERT_EQUAL_INT(0, hashtable_insert(&table, pairs[i].key, pairs[i].key_size, NULL, 0));
+    }
+
+    // Now, loop through all added keys and verify hashtable_retrieve and hashtable_has_key work as expected
+    for (int i = 0; i < numkeys; i++)
+    {
+        TEST_ASSERT_EQUAL_INT(1, hashtable_has_key(&table, pairs[i].key, pairs[i].key_size));
+        TEST_ASSERT_EQUAL_INT(0, hashtable_retrieve(&table, pairs[i].key, pairs[i].key_size, NULL, NULL));
+    }
+
+    // Generate and verify it's not in the table
+    char badkey[MAX_STR_LEN];
+    size_t badkeysize;
+    _rand_str(badkey, &badkeysize);
+
+    TEST_ASSERT_EQUAL_INT(0, hashtable_has_key(&table, badkey, badkeysize));
+    TEST_ASSERT_EQUAL_INT(1, hashtable_retrieve(&table, badkey, badkeysize, NULL, NULL));
+}
+
+
+// Tests that iteration via hashtable_next_item works as expected, when the table
+// contains only keys and no values (all values are size 0)
+void test_hashtable_next_item_only_keys(void)
+{
+    hashtable_t table;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
+
+    const int numkeys = 12u;
+
+    _test_keyval_pair_t pairs[numkeys];
+
+    // Insert 'numkeys' key/val pairs, with NULL values
+    for (int i = 0; i < numkeys; i++)
+    {
+        _rand_str(pairs[i].key, &pairs[i].key_size);
+        TEST_ASSERT_EQUAL_INT(0, hashtable_insert(&table, pairs[i].key, pairs[i].key_size, NULL, 0));
+    }
+
+    // Iterate all keys using hashtable_next_item, verify they match what we inserted
+    char *key;
+    size_t key_size;
+    int ret;
+
+    uint32_t items_verified = 0u;
+    while ((ret = hashtable_next_item(&table, &key, &key_size, NULL, 0)) == 0)
+    {
+        bool found_key = false;
+
+        for (int i = 0; i < numkeys; i++)
+        {
+            if ((key_size == pairs[i].key_size) && (0 == memcmp(key, pairs[i].key, key_size)) && !pairs[i].removed)
+            {
+                // Re-using 'removed' flag to indicate that we have already verified this key
+                pairs[i].removed = true;
+                found_key = true;
+                items_verified += 1u;
+                break;
+            }
+        }
+
+        if (!found_key)
+        {
+            TEST_FAIL_MESSAGE("Failed to find corresponding inserted key for key provided by iteration");
+        }
+    }
+
+    // Verify we reached the limit, instead of encountering an error
+    TEST_ASSERT_EQUAL_INT(1, ret);
+
+    // Verify the expected number of correct keys were iterated
+    TEST_ASSERT_EQUAL_INT(numkeys, items_verified);
+}
+
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -806,22 +846,18 @@ int main(void)
     RUN_TEST(test_hashtable_create_buffer_size_too_small);
     RUN_TEST(test_hashtable_insert_null_table);
     RUN_TEST(test_hashtable_insert_null_key);
-    RUN_TEST(test_hashtable_insert_null_value);
     RUN_TEST(test_hashtable_insert_zero_key_size);
-    RUN_TEST(test_hashtable_insert_zero_value_size);
     RUN_TEST(test_hashtable_insert_null_table);
     RUN_TEST(test_hashtable_insert_null_key);
     RUN_TEST(test_hashtable_insert_zero_key_size);
     RUN_TEST(test_hashtable_retrieve_null_table);
     RUN_TEST(test_hashtable_retrieve_null_key);
-    RUN_TEST(test_hashtable_retrieve_null_value);
     RUN_TEST(test_hashtable_has_key_null_table);
     RUN_TEST(test_hashtable_has_key_null_key);
     RUN_TEST(test_hashtable_bytes_remaining_null_table);
     RUN_TEST(test_hashtable_bytes_remaining_null_key);
     RUN_TEST(test_hashtable_next_item_null_table);
     RUN_TEST(test_hashtable_next_item_null_key);
-    RUN_TEST(test_hashtable_next_item_null_value);
     RUN_TEST(test_hashtable_reset_cursor_null_table);
 
     // Woohoo now the more fun tests
@@ -837,6 +873,8 @@ int main(void)
     RUN_TEST(test_hashtable_bytes_remaining_overwrite_smallervalue);
     RUN_TEST(test_hashtable_bytes_remaining_overwrite_largervalue);
     RUN_TEST(test_hashtable_create_minimum_buffer_size);
+    RUN_TEST(test_hastable_insert_retrieve_keys_only);
+    RUN_TEST(test_hashtable_next_item_only_keys);
 
     return UNITY_END();
 }

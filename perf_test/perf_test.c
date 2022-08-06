@@ -21,7 +21,7 @@
 #define MAX_STR_LEN (32u)
 
 // Number of randomly-generated items to insert into table
-#define ITEM_INSERT_COUNT (4000000u)
+#define ITEM_INSERT_COUNT (5000000u)
 
 
 #if defined(_WIN32)

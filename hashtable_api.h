@@ -174,8 +174,8 @@ int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
  * @param table       Pointer to hashtable instance
  * @param key         Pointer to key data
  * @param key_size    Key data size in bytes
- * @param value       Pointer to value data
- * @param value_size  Value data size in bytes
+ * @param value       Pointer to value data, may be NULL
+ * @param value_size  Value data size in bytes, may be 0
  *
  * @return   0 if successful, 1 if there is not enough space left in the buffer for
              key/value pair data, and -1 if an error occurred. Use #hashtable_error_message
@@ -205,8 +205,8 @@ int hashtable_remove(hashtable_t *table, const char *key, const hashtable_size_t
  * @param table       Pointer to hashtable instance
  * @param key         Pointer to key data
  * @param key_size    Key data size in bytes
- * @param value       Pointer to location to store value pointer
- * @param value_size  Pointer to location to store value size
+ * @param value       Pointer to location to store value pointer, may be NULL
+ * @param value_size  Pointer to location to store value size, may be NULL
  *
  * @return   0 if successful, 1 if the key does not exist, and -1 if an error occurred.
  *           Use #hashtable_error_message to get an error message if -1 is returned.
@@ -247,8 +247,8 @@ int hashtable_bytes_remaining(hashtable_t *table, size_t *bytes_remaining);
  * @param table       Pointer to hashtable instance
  * @param key         Pointer to location to store key pointer
  * @param key_size    Pointer to location to store key data size in bytes
- * @param value       Pointer to location to store value pointer
- * @param value_size  Pointer to location to store value data size in bytes
+ * @param value       Pointer to location to store value pointer, may be NULL
+ * @param value_size  Pointer to location to store value data size in bytes, may be NULL
  *
  * @return   0 if next item was read successfully, 1 if no item was read because
  *           all items in the table have been iterated over (in this case you can
