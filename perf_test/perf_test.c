@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <string.h>
 #include <inttypes.h>
 #include <stdarg.h>
@@ -35,8 +36,8 @@ static uint64_t _perf_freq;
 
 typedef struct
 {
-    char key[MAX_STR_LEN + 1u];
-    char value[MAX_STR_LEN + 1u];
+    unsigned char key[MAX_STR_LEN + 1u];
+    unsigned char value[MAX_STR_LEN + 1u];
     hashtable_size_t key_size;
     hashtable_size_t value_size;
 } _test_keyval_pair_t;
@@ -122,6 +123,16 @@ static void _fmt_int_with_commas(long x, char *output)
 }
 
 
+static void _fmt_bytes_as_hex(unsigned char *bytes, size_t num_bytes, char *output)
+{
+    for (int i = 0; i < num_bytes; i++)
+    {
+        int printed = snprintf(output, 4u, "%02x ", (uint8_t) bytes[i]);
+        output += printed;
+    }
+}
+
+
 // Utility function for getting a system timestamp in microseconds
 uint64_t timing_usecs_elapsed(void)
 {
@@ -166,40 +177,36 @@ static void _log(const char *fmt, ...)
 static int _rand_range(int lower, int upper)
 {
     return (rand() % ((upper - lower) + 1)) + lower;
+    //return (rand() % (upper - lower)) + lower;
 }
 
 
-static void _rand_str(char *output, hashtable_size_t *num_chars)
+static void _rand_str(unsigned char *output, hashtable_size_t *num_chars, bool ascii_only)
 {
     *num_chars = (hashtable_size_t) _rand_range(MIN_STR_LEN, MAX_STR_LEN);
 
+    // By default, generate from all printable chars
+    int low = 0x21;
+    int high = 0x7e;
+
+    if (!ascii_only)
+    {
+        // Unless ascii_only flag is unset, in which case all bytes values are used
+        low = 0x0;
+        high = 0xfe;
+    }
+
     for (unsigned int i = 0; i < *num_chars; i++)
     {
-        output[i] = (char) _rand_range(0x21, 0x7e);
+        output[i] = (unsigned char) _rand_range(low, high);
     }
 
     output[*num_chars] = '\0';
 }
 
 
-int main(void)
+static int _run_perf_test(bool ascii_only)
 {
-    // Setup timing function
-#if defined(_WIN32)
-    LARGE_INTEGER tcounter = {0};
-    if (QueryPerformanceFrequency(&tcounter) != 0)
-    {
-        _perf_freq = tcounter.QuadPart;
-    }
-#elif defined(__linux__)
-    // Nothing to do
-#else
-#error "Platform not supported"
-#endif // _WIN32
-
-    _start_us = timing_usecs_elapsed();
-    srand((unsigned int) _start_us);
-
     if (hashtable_create(&_table, NULL, _buffer, sizeof(_buffer)) < 0)
     {
         printf("%s\n", hashtable_error_message());
@@ -222,8 +229,6 @@ int main(void)
     char tablesize_buf[32];
     (void) sizesprint(sizeof(_buffer) - bytes_available, tablesize_buf, sizeof(tablesize_buf));
 
-    printf("\nhashtable performance smoke test (hashtable "HASHTABLE_LIB_VERSION")\n\n");
-
     _log("Buffer size %s\n", bufsize_buf);
     _log("%s of buffer is used for table array\n", tablesize_buf);
     _log("%s of buffer remains for key/value data\n", rmsize_buf);
@@ -236,14 +241,42 @@ int main(void)
 
     for (uint32_t i = 0u; i < ITEM_INSERT_COUNT; i++)
     {
-        _rand_str(_test_pairs[i].key, &_test_pairs[i].key_size);
-        _rand_str(_test_pairs[i].value, &_test_pairs[i].value_size);
+        _rand_str(_test_pairs[i].key, &_test_pairs[i].key_size, ascii_only);
+        _rand_str(_test_pairs[i].value, &_test_pairs[i].value_size, ascii_only);
     }
 
-    _log("first key   : %s\n", _test_pairs[0].key);
-    _log("first value : %s\n", _test_pairs[0].value);
-    _log("last key    : %s\n", _test_pairs[ITEM_INSERT_COUNT - 1].key);
-    _log("last value  : %s\n", _test_pairs[ITEM_INSERT_COUNT - 1].value);
+    unsigned char *firstkey = _test_pairs[0].key;
+    unsigned char *firstvalue = _test_pairs[0].value;
+    unsigned char *lastkey = _test_pairs[ITEM_INSERT_COUNT - 1].key;
+    unsigned char *lastvalue = _test_pairs[ITEM_INSERT_COUNT - 1].value;
+
+    char firstkeybuf[128u];
+    char lastkeybuf[128u];
+    char firstvaluebuf[128u];
+    char lastvaluebuf[128u];
+
+    if (!ascii_only)
+    {
+        hashtable_size_t firstkeysize = _test_pairs[0].key_size;
+        hashtable_size_t firstvaluesize = _test_pairs[0].value_size;
+        hashtable_size_t lastkeysize = _test_pairs[ITEM_INSERT_COUNT - 1].key_size;
+        hashtable_size_t lastvaluesize = _test_pairs[ITEM_INSERT_COUNT - 1].value_size;
+
+        _fmt_bytes_as_hex(firstkey, firstkeysize, firstkeybuf);
+        _fmt_bytes_as_hex(firstvalue, firstvaluesize, firstvaluebuf);
+        _fmt_bytes_as_hex(lastkey, lastkeysize, lastkeybuf);
+        _fmt_bytes_as_hex(lastvalue, lastvaluesize, lastvaluebuf);
+
+        firstkey = (unsigned char *) firstkeybuf;
+        firstvalue = (unsigned char *) firstvaluebuf;
+        lastkey = (unsigned char *) lastkeybuf;
+        lastvalue = (unsigned char *) lastvaluebuf;
+    }
+
+    _log("first key   : %s\n", firstkey);
+    _log("first value : %s\n", firstvalue);
+    _log("last key    : %s\n", lastkey);
+    _log("last value  : %s\n", lastvalue);
 
     _log("Inserting all %s key/value pairs into the table\n", itemcount_str);
 
@@ -252,9 +285,37 @@ int main(void)
 
     for (uint32_t i = 0u; i < ITEM_INSERT_COUNT; i++)
     {
+        // Verify key is not already in table
+        if (hashtable_has_key(&_table, (char *) _test_pairs[i].key, _test_pairs[i].key_size))
+        {
+            int index = -1;
+            // Find the matching key
+            for (int j = 0u; j < i; j++)
+            {
+                if ((_test_pairs[j].key_size == _test_pairs[i].key_size) &&
+                    (0 == memcmp(_test_pairs[j].key, _test_pairs[i].key, _test_pairs[i].key_size)))
+                {
+                    index = j;
+                    break;
+                }
+            }
+
+            if (index < 0)
+            {
+                printf("Error inserting key #%u, table reports key exists, but it's not in the test data\n", i);
+            }
+            else
+            {
+                printf("Error inserting key #%u, key #%u matches\n", i, index);
+            }
+
+            return -1;
+        }
+
         uint64_t startus = timing_usecs_elapsed();
-        int ret = hashtable_insert(&_table, _test_pairs[i].key, _test_pairs[i].key_size,
-                                   _test_pairs[i].value, _test_pairs[i].value_size);
+        int ret = hashtable_insert(&_table, (char *) _test_pairs[i].key, _test_pairs[i].key_size,
+                                   (char *) _test_pairs[i].value, _test_pairs[i].value_size);
+        uint64_t time_us = timing_usecs_elapsed() - startus;
 
         if (-1 == ret)
         {
@@ -267,7 +328,6 @@ int main(void)
             return -1;
         }
 
-        uint64_t time_us = timing_usecs_elapsed() - startus;
         total_insert_us += time_us;
 
         if (time_us > longest_insert_us)
@@ -305,7 +365,7 @@ int main(void)
         hashtable_size_t value_size;
 
         uint64_t startus = timing_usecs_elapsed();
-        if (0 > hashtable_retrieve(&_table, _test_pairs[i].key, _test_pairs[i].key_size,
+        if (0 > hashtable_retrieve(&_table, (char *) _test_pairs[i].key, _test_pairs[i].key_size,
                                    &value, &value_size))
         {
             printf("%s\n", hashtable_error_message());
@@ -320,9 +380,16 @@ int main(void)
             longest_retrieve_us = time_us;
         }
 
+        if (_test_pairs[i].value_size != value_size)
+        {
+            printf("Error, retrieved value #%u size did not match (inserted %u, table had %u)\n",
+                   i, _test_pairs[i].value_size, value_size);
+            return -1;
+        }
+
         if (0 != memcmp(_test_pairs[i].value, value, value_size))
         {
-            printf("Error, retrieved value #%u did not match\n", i);
+            printf("Error, retrieved value #%u contents did not match\n", i);
             return -1;
         }
     }
@@ -338,7 +405,7 @@ int main(void)
     for (uint32_t i = 0u; i < ITEM_INSERT_COUNT; i++)
     {
         uint64_t startus = timing_usecs_elapsed();
-        if (0 > hashtable_remove(&_table, _test_pairs[i].key, _test_pairs[i].key_size))
+        if (0 > hashtable_remove(&_table, (char *) _test_pairs[i].key, _test_pairs[i].key_size))
         {
             printf("%s\n", hashtable_error_message());
             return -1;;
@@ -361,7 +428,7 @@ int main(void)
     // Verify all remove items are indeed removed, according to hashtable_has_key
     for (uint32_t i = 0u; i < ITEM_INSERT_COUNT; i++)
     {
-        if (hashtable_has_key(&_table, _test_pairs[i].key, _test_pairs[i].key_size))
+        if (hashtable_has_key(&_table, (char *) _test_pairs[i].key, _test_pairs[i].key_size))
         {
             printf("Item #%u has been removed, but apparently is still in the table\n", i);
             return -1;
@@ -378,8 +445,8 @@ int main(void)
     for (uint32_t i = 0u; i < ITEM_INSERT_COUNT; i++)
     {
         uint64_t startus = timing_usecs_elapsed();
-        if (0 > hashtable_insert(&_table, _test_pairs[i].key, _test_pairs[i].key_size,
-                                _test_pairs[i].value, _test_pairs[i].value_size))
+        if (0 > hashtable_insert(&_table, (char *) _test_pairs[i].key, _test_pairs[i].key_size,
+                                (char *) _test_pairs[i].value, _test_pairs[i].value_size))
         {
             printf("%s\n", hashtable_error_message());
             return -1;
@@ -416,4 +483,36 @@ int main(void)
     printf("\n");
 
     return 0;
+}
+
+
+int main(void)
+{
+    // Setup timing function
+#if defined(_WIN32)
+    LARGE_INTEGER tcounter = {0};
+    if (QueryPerformanceFrequency(&tcounter) != 0)
+    {
+        _perf_freq = tcounter.QuadPart;
+    }
+#elif defined(__linux__)
+    // Nothing to do
+#else
+#error "Platform not supported"
+#endif // _WIN32
+
+    _start_us = timing_usecs_elapsed();
+    srand((unsigned int) _start_us);
+
+    printf("\nhashtable performance smoke test (hashtable "HASHTABLE_LIB_VERSION")\n\n");
+
+    _log("Running test with randomly-generated ASCII key/value data\n");
+    if (_run_perf_test(true) < 0)
+    {
+        return -1;
+    }
+
+    printf("\n");
+    _log("Running test with randomly-generated binary key/value data\n");
+    return _run_perf_test(false);
 }
