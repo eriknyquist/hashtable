@@ -36,6 +36,9 @@ all: clean test
 debug: CFLAGS += -g -O0
 debug: $(TEST_PROG)
 
+gprof: CFLAGS += -g -O0 -pg
+gprof: $(TEST_PROG)
+
 test: $(TEST_PROG)
 
 $(TEST_PROG): $(OUTPUT_DIR)

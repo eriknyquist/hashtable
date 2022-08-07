@@ -9,7 +9,7 @@
 #include "hashtable_api.h"
 
 // Size of statically-allocated buffer passed to hashtable_create
-#define BUFFER_SIZE (1024 * 1024 * 512)
+#define BUFFER_SIZE (1024 * 1024 * 128)
 
 // Log messages printed to stdout can't be larger than this
 #define MAX_LOG_MSG_SIZE (256u)
@@ -21,7 +21,7 @@
 #define MAX_STR_LEN (32u)
 
 // Number of randomly-generated items to insert into table
-#define ITEM_INSERT_COUNT (7000000u)
+#define ITEM_INSERT_COUNT (1000000u)
 
 
 #if defined(_WIN32)
