@@ -12,6 +12,16 @@
  * This hashtable is designed to be flexible enough for use on embedded systems that have
  * no dynamic memory, and/or limited memory in general.
  *
+ * \section codesample_sec Example program
+ *
+ * The following sample program creates a hashtable instance, inserts a single key/value pair,
+ * and the retrieves the stored value with the same key, and prints it to stdout.
+ *
+ * See \link API documentation for hashtable_api.h \endlink for comprehensive details about
+ * all available functions.
+ *
+ * \include example_main.c
+ *
  * \section features_sec Features/limitations
  *
  * - Implemented in pure C99, and requires only `stdint.h` and `string.h`.
@@ -61,6 +71,7 @@
  *  Symbol name               | Effect
  *  --------------------------|-----------------------------------------------------
  *  `HASHTABLE_PACKED_STRUCT` | Key/value pair struct uses `__attribute__((packed))`
+ *
  */
 
 

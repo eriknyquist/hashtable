@@ -71,7 +71,76 @@ Introduction</h1>
 <p >See <a class="el" href="hashtable__api_8h.html">API documentation for hashtable_api.h. </a></p>
 <p >This module implements a lightweight hashtable that uses separate chaining to resolve collisions.</p>
 <p >This hashtable is designed to be flexible enough for use on embedded systems that have no dynamic memory, and/or limited memory in general.</p>
-<h1><a class="anchor" id="features_sec"></a>
+<h1><a class="anchor" id="codesample_sec"></a>
+Example program</h1>
+<p >The following sample program creates a hashtable instance, inserts a single key/value pair, and the retrieves the stored value with the same key, and prints it to stdout.</p>
+<p >See <a class="el" href="">documentation for hashtable_api.h </a> for comprehensive details about all available functions.</p>
+<div class="fragment"><div class="line"><span class="preprocessor">#include &lt;stdio.h&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;string.h&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &quot;<a class="code" href="hashtable__api_8h.html">hashtable_api.h</a>&quot;</span></div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Generates a new key/value pair on the stack and inserts into the given table</span></div>
+<div class="line"><span class="keyword">static</span> <span class="keywordtype">int</span> _insert_item(<a class="code hl_struct" href="structhashtable__t.html">hashtable_t</a> *table)</div>
+<div class="line">{</div>
+<div class="line">    <span class="keywordtype">char</span> key[32u];</div>
+<div class="line">    <span class="keywordtype">char</span> value[32u];</div>
+<div class="line"> </div>
+<div class="line">    <span class="keywordtype">int</span> keysize = snprintf(key, <span class="keyword">sizeof</span>(key), <span class="stringliteral">&quot;My key #1&quot;</span>);</div>
+<div class="line">    <span class="keywordtype">int</span> valuesize = snprintf(value, <span class="keyword">sizeof</span>(value), <span class="stringliteral">&quot;My value #1&quot;</span>);</div>
+<div class="line"> </div>
+<div class="line">    <span class="keywordflow">return</span> <a class="code hl_function" href="hashtable__api_8h.html#a7ecf50cf685ca98768a69b328f81e582">hashtable_insert</a>(table, key, keysize + 1, value, valuesize + 1);</div>
+<div class="line">}</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Retrieves the value from the given table using the same key, and prints it</span></div>
+<div class="line"><span class="keyword">static</span> <span class="keywordtype">int</span> _retrieve_and_print_item(<a class="code hl_struct" href="structhashtable__t.html">hashtable_t</a> *table)</div>
+<div class="line">{</div>
+<div class="line">    <span class="keyword">const</span> <span class="keywordtype">char</span> *key = <span class="stringliteral">&quot;My key #1&quot;</span>;</div>
+<div class="line">    <span class="keywordtype">size_t</span> keysize = strlen(key) + 1u;</div>
+<div class="line">    <span class="keywordtype">char</span> *value;</div>
+<div class="line">    hashtable_size_t valuesize;</div>
+<div class="line"> </div>
+<div class="line">    <span class="keywordflow">if</span> (<a class="code hl_function" href="hashtable__api_8h.html#a45f3fe6d72ed5382addf276378966678">hashtable_retrieve</a>(table, key, keysize, &amp;value, &amp;valuesize) != 0)</div>
+<div class="line">    {</div>
+<div class="line">        <span class="keywordflow">return</span> -1;</div>
+<div class="line">    }</div>
+<div class="line"> </div>
+<div class="line">    printf(<span class="stringliteral">&quot;key=&#39;%s&#39;, value=&#39;%s&#39;, valuesize=%d\n&quot;</span>, key, value, valuesize);</div>
+<div class="line">    <span class="keywordflow">return</span> 0;</div>
+<div class="line">}</div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line"><span class="keywordtype">int</span> main(<span class="keywordtype">void</span>)</div>
+<div class="line">{</div>
+<div class="line">    <span class="comment">// Hashtable instance</span></div>
+<div class="line">    <a class="code hl_struct" href="structhashtable__t.html">hashtable_t</a> table;</div>
+<div class="line"> </div>
+<div class="line">    <span class="comment">// Allocate buffer of size 512 for storing the table + key/value data</span></div>
+<div class="line">    <span class="keywordtype">char</span> buf[512];</div>
+<div class="line"> </div>
+<div class="line">    <span class="comment">// Initialize a hashtable instance with 512 byte buffer</span></div>
+<div class="line">    <span class="keywordflow">if</span> (<a class="code hl_function" href="hashtable__api_8h.html#a15986e05c7f0cd9f2cdc8c5b17696b61">hashtable_create</a>(&amp;table, NULL, buf, <span class="keyword">sizeof</span>(buf)) != 0)</div>
+<div class="line">    {</div>
+<div class="line">        <span class="comment">// Error</span></div>
+<div class="line">        <span class="keywordflow">return</span> -1;</div>
+<div class="line">    }</div>
+<div class="line"> </div>
+<div class="line">    <span class="comment">// Add a key/value pair to the hashtable</span></div>
+<div class="line">    <span class="keywordflow">if</span> (_insert_item(&amp;table) != 0)</div>
+<div class="line">    {</div>
+<div class="line">        <span class="comment">// Error</span></div>
+<div class="line">        <span class="keywordflow">return</span> -1;</div>
+<div class="line">    }</div>
+<div class="line"> </div>
+<div class="line">    <span class="comment">// Retrieve inserted item and print it</span></div>
+<div class="line">    <span class="keywordflow">return</span> _retrieve_and_print_item(&amp;table);</div>
+<div class="line">}</div>
+<div class="ttc" id="ahashtable__api_8h_html"><div class="ttname"><a href="hashtable__api_8h.html">hashtable_api.h</a></div><div class="ttdoc">Implements a lightweight separate-chaining hashtable designed to be flexible enough for embedded syst...</div></div>
+<div class="ttc" id="ahashtable__api_8h_html_a15986e05c7f0cd9f2cdc8c5b17696b61"><div class="ttname"><a href="hashtable__api_8h.html#a15986e05c7f0cd9f2cdc8c5b17696b61">hashtable_create</a></div><div class="ttdeci">int hashtable_create(hashtable_t *table, const hashtable_config_t *config, void *buffer, size_t buffer_size)</div></div>
+<div class="ttc" id="ahashtable__api_8h_html_a45f3fe6d72ed5382addf276378966678"><div class="ttname"><a href="hashtable__api_8h.html#a45f3fe6d72ed5382addf276378966678">hashtable_retrieve</a></div><div class="ttdeci">int hashtable_retrieve(hashtable_t *table, const char *key, const hashtable_size_t key_size, char **value, hashtable_size_t *value_size)</div></div>
+<div class="ttc" id="ahashtable__api_8h_html_a7ecf50cf685ca98768a69b328f81e582"><div class="ttname"><a href="hashtable__api_8h.html#a7ecf50cf685ca98768a69b328f81e582">hashtable_insert</a></div><div class="ttdeci">int hashtable_insert(hashtable_t *table, const char *key, const hashtable_size_t key_size, const char *value, const hashtable_size_t value_size)</div></div>
+<div class="ttc" id="astructhashtable__t_html"><div class="ttname"><a href="structhashtable__t.html">hashtable_t</a></div><div class="ttdoc">All data for a single hashtable instance.</div><div class="ttdef"><b>Definition:</b> hashtable_api.h:155</div></div>
+</div><!-- fragment --><h1><a class="anchor" id="features_sec"></a>
 Features/limitations</h1>
 <ul>
 <li>Implemented in pure C99, and requires only <code>stdint.h</code> and <code>string.h</code>.</li>
