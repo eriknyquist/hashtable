@@ -9,6 +9,13 @@
  * This hashtable is designed to be flexible enough for use on embedded systems that have
  * no dynamic memory, and/or limited memory in general.
  *
+ * \section gettingstarted_sec Getting started
+ *
+ * -# Compile <code>hashtable.c</code> along with the rest of the files in your project
+ * -# Include <code>hashtable_api.h</code> in files where you want to use hashtables
+ * -# Use the functions detailed in <code>hashtable_api.h</code> to create and interact
+ *    with hashtables
+ *
  * \section codesample_sec Example program
  *
  * The following sample program creates a hashtable instance, inserts a single key/value pair,
