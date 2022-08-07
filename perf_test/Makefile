@@ -36,8 +36,11 @@ all: clean test
 debug: CFLAGS += -g -O0
 debug: $(TEST_PROG)
 
-gprof: CFLAGS += -g -O0 -pg
-gprof: $(TEST_PROG)
+run_gprof: CFLAGS += -g -O0 -pg
+run_gprof: $(TEST_PROG)
+run_gprof:
+	./$(TEST_PROG)
+	gprof $(TEST_PROG) gmon.out > perf_test_analysis.txt
 
 test: $(TEST_PROG)
 
