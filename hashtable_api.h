@@ -2,10 +2,7 @@
  *
  * \section intro_sec Introduction
  *
- * See
- * \link hashtable_api.h
- * API documentation for hashtable_api.h.
- * \endlink
+ * See \link hashtable_api.h API documentation for hashtable_api.h \endlink .
  *
  * This module implements a lightweight hashtable that uses separate chaining to resolve collisions.
  *
@@ -17,7 +14,7 @@
  * The following sample program creates a hashtable instance, inserts a single key/value pair,
  * and the retrieves the stored value with the same key, and prints it to stdout.
  *
- * See \link API documentation for hashtable_api.h \endlink for comprehensive details about
+ * See \link hashtable_api.h API documentation for hashtable_api.h \endlink for comprehensive details about
  * all available functions.
  *
  * \include example_main.c
