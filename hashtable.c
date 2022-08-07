@@ -260,17 +260,14 @@ static _keyval_pair_t *_search_list_by_key(hashtable_t *table, _keyval_pair_list
 
     while (NULL != curr)
     {
-        if (curr->key_size == key_size)
+        if (0 == memcmp(key, curr->data, key_size))
         {
-            if (0 == memcmp(key, curr->data, key_size))
+            if (NULL != previous)
             {
-                if (NULL != previous)
-                {
-                    *previous = prev;
-                }
-
-                return curr;
+                *previous = prev;
             }
+
+            return curr;
         }
 
         prev = curr;
