@@ -473,6 +473,8 @@ int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
     table->array_slots_used = 0u;
     table->entry_count = 0u;
     table->table_data = buffer;
+    table->data_size = buffer_size;
+
     return 0;
 }
 
@@ -712,6 +714,40 @@ int hashtable_reset_cursor(hashtable_t *table)
 
     return 0;
 }
+
+
+/**
+ * @see hashtable_api.h
+ */
+ int hashtable_clear(hashtable_t *table)
+ {
+#ifndef HASHTABLE_DISABLE_PARAM_VALIDATION
+    if (NULL == table)
+    {
+        ERROR("NULL pointer passed to function");
+        return -1;
+    }
+#endif // HASHTABLE_DISABLE_PARAM_VALIDATION
+
+    _keyval_pair_table_data_t *td = (_keyval_pair_table_data_t *) table->table_data;
+
+    // NULL-ify all the array entries
+    (void) memset(td->list_table->table, 0, td->list_table->array_count * sizeof(_keyval_pair_list_t));
+
+    // Reset cursor values
+    td->cursor_array_index = 0u;
+    td->cursor_items_traversed = 0u;
+    td->cursor_item = td->list_table->table[0].head;
+    td->cursor_limit = 0u;
+
+    // Reset key/pair value data block
+    td->data_block->freelist.head = NULL;
+    td->data_block->freelist.tail = NULL;
+    td->data_block->total_bytes = table->data_size - HASHTABLE_MIN_BUFFER_SIZE(td->list_table->array_count);
+    td->data_block->bytes_used = 0u;
+
+    return 0;
+ }
 
 
 /**

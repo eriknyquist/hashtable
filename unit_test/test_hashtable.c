@@ -362,6 +362,20 @@ void test_hashtable_reset_cursor_null_table(void)
 }
 
 
+// Tests that hashtable_default_config fails when a NULL config is passed
+void test_hashtable_default_config_null_config(void)
+{
+    TEST_ASSERT_EQUAL_INT(-1, hashtable_default_config(NULL, 512u));
+}
+
+
+// Tests that hashtable_clear fails when a NULL table is passed
+void test_hashtable_clear_null_table(void)
+{
+    TEST_ASSERT_EQUAL_INT(-1, hashtable_clear(NULL));
+}
+
+
 // Tests that hashtable_insert returns 1 when no space is available in the buffer
 void test_hashtable_insert_buffer_full(void)
 {
@@ -835,6 +849,110 @@ void test_hashtable_next_item_only_keys(void)
 }
 
 
+// Tests that hashtable_insert/retrieve both work as expected when a valid value pointer
+// but a zero value size is passed
+void test_hashtable_insert_retrieve_zero_value_valid_ptr(void)
+{
+    hashtable_t table;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
+
+    char key[16u];
+    (void) memset(key, 0xaa, sizeof(key));
+
+    char value = 'a';
+
+    TEST_ASSERT_EQUAL_INT(0, hashtable_insert(&table, key, sizeof(key), &value, 0u));
+
+    char *retrieved_val = NULL;
+    hashtable_size_t retrieved_val_size = 0xffu;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_retrieve(&table, key, sizeof(key), &retrieved_val, &retrieved_val_size));
+    TEST_ASSERT_EQUAL_INT(0, retrieved_val_size);
+}
+
+
+// Tests that hashtable_insert/retrieve both work as expected when in invalid value pointer
+// but a non-zero value size is passed
+void test_hashtable_insert_retrieve_nonzero_value_invalid_ptr(void)
+{
+    hashtable_t table;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
+
+    char key[16u];
+    (void) memset(key, 0xaa, sizeof(key));
+
+    TEST_ASSERT_EQUAL_INT(0, hashtable_insert(&table, key, sizeof(key), NULL, 9999u));
+
+    char *retrieved_val = NULL;
+    hashtable_size_t retrieved_val_size = 0u;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_retrieve(&table, key, sizeof(key), &retrieved_val, &retrieved_val_size));
+    TEST_ASSERT_EQUAL_INT(9999u, retrieved_val_size);
+}
+
+
+// Tests that hashtable_clear removes all stored data, and leaves the table in a state
+// that allows more items to be added & the table to be cleared again
+void test_hashtable_insert_retrieve_clear_insertagain_clearagain(void)
+{
+    hashtable_t table;
+    TEST_ASSERT_EQUAL_INT(0, hashtable_create(&table, NULL, _buffer, sizeof(_buffer)));
+
+    // Generate 2 key/val pairs, and insert them into the table
+    char key1[16u];
+    char value1[16u];
+    char key2[16u];
+    char value2[16u];
+
+    (void) memset(key1, 0xaa, sizeof(key1));
+    (void) memset(value1, 0xbb, sizeof(value1));
+    (void) memset(key2, 0xcc, sizeof(key2));
+    (void) memset(value2, 0xdd, sizeof(value2));
+
+    TEST_ASSERT_EQUAL_INT(0, hashtable_insert(&table, key1, sizeof(key1), value1, sizeof(value1)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_insert(&table, key2, sizeof(key2), value2, sizeof(value2)));
+
+    char *value1r1;
+    size_t value1r1size;
+    char *value2r1;
+    size_t value2r1size;
+
+    // Retrieve both values, they should be there
+    TEST_ASSERT_EQUAL(0, hashtable_retrieve(&table, key1, sizeof(key1), &value1r1, &value1r1size));
+    TEST_ASSERT_EQUAL(0, hashtable_retrieve(&table, key2, sizeof(key2), &value2r1, &value2r1size));
+    TEST_ASSERT_EQUAL_INT(0, memcmp(value1, value1r1, value1r1size));
+    TEST_ASSERT_EQUAL_INT(0, memcmp(value2, value2r1, value2r1size));
+
+    // Clear the table, verify values don't exist anymore
+    TEST_ASSERT_EQUAL_INT(0, hashtable_clear(&table));
+    TEST_ASSERT_EQUAL(1, hashtable_retrieve(&table, key1, sizeof(key1), &value1r1, &value1r1size));
+    TEST_ASSERT_EQUAL(1, hashtable_retrieve(&table, key2, sizeof(key2), &value2r1, &value2r1size));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_has_key(&table, key1, sizeof(key1)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_has_key(&table, key2, sizeof(key2)));
+
+    // Generate 2 new key/val pairs, insert them
+    (void) memset(key1, 0x11, sizeof(key1));
+    (void) memset(value1, 0x22, sizeof(value1));
+    (void) memset(key2, 0x33, sizeof(key2));
+    (void) memset(value2, 0x44, sizeof(value2));
+
+    TEST_ASSERT_EQUAL_INT(0, hashtable_insert(&table, key1, sizeof(key1), value1, sizeof(value1)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_insert(&table, key2, sizeof(key2), value2, sizeof(value2)));
+
+    // Retrieve both values, verify they match new inserted values
+    TEST_ASSERT_EQUAL(0, hashtable_retrieve(&table, key1, sizeof(key1), &value1r1, &value1r1size));
+    TEST_ASSERT_EQUAL(0, hashtable_retrieve(&table, key2, sizeof(key2), &value2r1, &value2r1size));
+    TEST_ASSERT_EQUAL_INT(0, memcmp(value1, value1r1, value1r1size));
+    TEST_ASSERT_EQUAL_INT(0, memcmp(value2, value2r1, value2r1size));
+
+    // Clear the table, verify values don't exist anymore
+    TEST_ASSERT_EQUAL_INT(0, hashtable_clear(&table));
+    TEST_ASSERT_EQUAL(1, hashtable_retrieve(&table, key1, sizeof(key1), &value1r1, &value1r1size));
+    TEST_ASSERT_EQUAL(1, hashtable_retrieve(&table, key2, sizeof(key2), &value2r1, &value2r1size));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_has_key(&table, key1, sizeof(key1)));
+    TEST_ASSERT_EQUAL_INT(0, hashtable_has_key(&table, key2, sizeof(key2)));
+
+}
+
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -859,6 +977,8 @@ int main(void)
     RUN_TEST(test_hashtable_next_item_null_table);
     RUN_TEST(test_hashtable_next_item_null_key);
     RUN_TEST(test_hashtable_reset_cursor_null_table);
+    RUN_TEST(test_hashtable_default_config_null_config);
+    RUN_TEST(test_hashtable_clear_null_table);
 
     // Woohoo now the more fun tests
     RUN_TEST(test_hashtable_insert_buffer_full);
@@ -875,6 +995,9 @@ int main(void)
     RUN_TEST(test_hashtable_create_minimum_buffer_size);
     RUN_TEST(test_hastable_insert_retrieve_keys_only);
     RUN_TEST(test_hashtable_next_item_only_keys);
+    RUN_TEST(test_hashtable_insert_retrieve_zero_value_valid_ptr);
+    RUN_TEST(test_hashtable_insert_retrieve_nonzero_value_invalid_ptr);
+    RUN_TEST(test_hashtable_insert_retrieve_clear_insertagain_clearagain);
 
     return UNITY_END();
 }

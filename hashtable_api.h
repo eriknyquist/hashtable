@@ -289,6 +289,17 @@ int hashtable_reset_cursor(hashtable_t *table);
 
 
 /**
+ * Clear all stored data from a hashtable instance
+ *
+ * @param table  Pointer to hashtable instance
+ *
+ * @return   0 if successful, -1 if an error occurred. Use #hashtable_error_message
+ *           to get an error message.
+ */
+int hashtable_clear(hashtable_t *table);
+
+
+/**
  * Populate a configuration structure with the default hash function (FNV-1a), and
  * an array count optimized for the given buffer size.
  *

@@ -125,6 +125,8 @@ Functions</h2></td></tr>
 <tr class="separator:a1af5b79bf710f1a8dbe6c54ac0c544fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4e04af9382451a2c86c8e4e84f0a8224"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable__api_8h.html#a4e04af9382451a2c86c8e4e84f0a8224">hashtable_reset_cursor</a> (<a class="el" href="structhashtable__t.html">hashtable_t</a> *table)</td></tr>
 <tr class="separator:a4e04af9382451a2c86c8e4e84f0a8224"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a79faa7064b9618b87a0506ee6e842bec"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable__api_8h.html#a79faa7064b9618b87a0506ee6e842bec">hashtable_clear</a> (<a class="el" href="structhashtable__t.html">hashtable_t</a> *table)</td></tr>
+<tr class="separator:a79faa7064b9618b87a0506ee6e842bec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0c2078dfcfaaad328b8d4d8c4a4bb317"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable__api_8h.html#a0c2078dfcfaaad328b8d4d8c4a4bb317">hashtable_default_config</a> (<a class="el" href="structhashtable__config__t.html">hashtable_config_t</a> *config, size_t buffer_size)</td></tr>
 <tr class="separator:a0c2078dfcfaaad328b8d4d8c4a4bb317"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad965c402f8e617056d45e28a54c927ac"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable__api_8h.html#ad965c402f8e617056d45e28a54c927ac">hashtable_error_message</a> (void)</td></tr>
@@ -212,6 +214,32 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">table</td><td>Pointer to hashtable instance </td></tr>
     <tr><td class="paramname">bytes_remaining</td><td>Pointer to location to store number of bytes remaining</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 if successful, -1 if an error occurred. Use <a class="el" href="hashtable__api_8h.html#ad965c402f8e617056d45e28a54c927ac">hashtable_error_message</a> to get an error message. </dd></dl>
+
+</div>
+</div>
+<a id="a79faa7064b9618b87a0506ee6e842bec" name="a79faa7064b9618b87a0506ee6e842bec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a79faa7064b9618b87a0506ee6e842bec">&#9670;&nbsp;</a></span>hashtable_clear()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int hashtable_clear </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structhashtable__t.html">hashtable_t</a> *&#160;</td>
+          <td class="paramname"><em>table</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Clear all stored data from a hashtable instance</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">table</td><td>Pointer to hashtable instance</td></tr>
   </table>
   </dd>
 </dl>
