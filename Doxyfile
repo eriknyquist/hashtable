@@ -1028,7 +1028,7 @@ EXCLUDE_SYMBOLS        = HASHTABLE_LIB_VERSION HASHTABLE_SIZE_T_* _HASHTABLE_PAC
 # that contain example code fragments that are included (see the \include
 # command).
 
-EXAMPLE_PATH           = example_main.c
+EXAMPLE_PATH           = extras/example_main.c
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and
