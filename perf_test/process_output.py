@@ -39,6 +39,8 @@ def main():
     ax2 = ax1.twinx()
 
     ax1.get_xaxis().set_major_formatter(matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
+    ax2.get_yaxis().set_major_formatter(matplotlib.ticker.FormatStrFormatter('%.2f'))
+
     ax1.set_xlabel("No. of entries in table")
     ax1.set_ylabel("Nanoseconds")
     ax2.set_ylabel("Load factor", color='r')
