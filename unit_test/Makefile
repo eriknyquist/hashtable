@@ -38,7 +38,7 @@ debug: $(TEST_PROG)
 
 test: $(TEST_PROG)
 
-$(TEST_PROG): $(OUTPUT_DIR)
+$(TEST_PROG): clean $(OUTPUT_DIR)
 	$(GCC) $(CFLAGS) $(SRC_FILES) $(INCLUDES) -o $(TEST_PROG)
 	./$(TEST_PROG)
 

@@ -27,6 +27,7 @@ typedef struct
 
 static uint8_t _buffer[1024 * 1024];
 
+
 static int _rand_range(int lower, int upper)
 {
     return (rand() % (upper - lower + 1)) + lower;
@@ -86,11 +87,11 @@ static void _verify_table_contents(hashtable_t *table, _test_keyval_pair_t *pair
 static void _verify_iterated_table_contents(hashtable_t *table, _test_keyval_pair_t *pairs, unsigned int num_items,
                                             unsigned int num_items_removed)
 {
-    char *key;
-    char *value;
-    size_t key_size;
-    size_t value_size;
-    int ret;
+    char *key = NULL;
+    char *value = NULL;
+    size_t key_size = 0u;
+    size_t value_size = 0u;
+    int ret = 0;
 
     unsigned int entry_count = 0u;
 
@@ -143,11 +144,11 @@ static void _remove_random_items(hashtable_t *table, _test_keyval_pair_t *pairs,
     for (unsigned int i = 0; i < num_items_to_remove; i++)
     {
         // Find an item that hasn't been removed yet
-        int index = _rand_range(0, num_items);
+        int index = _rand_range(0, num_items - 1u);
 
         while (pairs[index].removed)
         {
-            index = _rand_range(0, num_items);
+            index = _rand_range(0, num_items - 1u);
         }
 
         // Remove item
@@ -786,7 +787,7 @@ void test_hastable_insert_retrieve_keys_only(void)
     }
 
     // Generate and verify it's not in the table
-    char badkey[MAX_STR_LEN];
+    char badkey[MAX_STR_LEN + 1u];
     size_t badkeysize;
     _rand_str(badkey, &badkeysize);
 
