@@ -6,19 +6,11 @@
 #include <inttypes.h>
 #include <stdarg.h>
 
+#include "testing_utils.h"
 #include "hashtable_api.h"
 
 // Size of statically-allocated buffer passed to hashtable_create
-#define BUFFER_SIZE (1024 * 1024 * 128)
-
-// Log messages printed to stdout can't be larger than this
-#define MAX_LOG_MSG_SIZE (256u)
-
-// Min. size of a randomly-generated key or value
-#define MIN_STR_LEN (16u)
-
-// Max. size of a randomly-generated key or value
-#define MAX_STR_LEN (32u)
+#define BUFFER_SIZE (1024 * 1024 * 512)
 
 // Number of randomly-generated items to insert into table
 #define ITEM_INSERT_COUNT (1000000u)
@@ -51,48 +43,6 @@ static uint8_t _buffer[BUFFER_SIZE];
 
 // Hashtable instance
 static hashtable_t _table;
-
-// Microseconds timestamp of program start time (used to show elapsed time in log message timestamps)
-static uint64_t _start_us = 0u;
-
-
-// Utility function for string-ifiyig a size in bytes in a human-readable format
-#define NUMSUFFIXES (7)
-
-static const char *size_suffixes[NUMSUFFIXES] =
-{
-    "EB", "PB", "TB", "GB", "MB", "KB", "B"
-};
-
-#define EXABYTES                (1024ULL * 1024ULL * 1024ULL * 1024ULL * \
-                                 1024ULL * 1024ULL)
-
-int sizesprint(size_t size, char *buf, unsigned int bufsize)
-{
-    int ret = 0;
-    uint64_t mult = EXABYTES;
-
-    for (int i = 0; i < NUMSUFFIXES; i++, mult /= 1024ULL)
-    {
-        if (size < mult)
-        {
-            continue;
-        }
-
-        if (mult && (size % mult) == 0)
-        {
-            ret = snprintf(buf, bufsize, "%"PRIu64"%s", size / mult, size_suffixes[i]);
-        }
-        else
-        {
-            ret = snprintf(buf, bufsize, "%.2f%s", (float) size / mult, size_suffixes[i]);
-        }
-
-        break;
-    }
-
-    return ret;
-}
 
 
 static void _fmt_int_with_commas(long x, char *output)
@@ -133,81 +83,16 @@ static void _fmt_bytes_as_hex(unsigned char *bytes, size_t num_bytes, char *outp
 }
 
 
-// Utility function for getting a system timestamp in microseconds
-uint64_t timing_usecs_elapsed(void)
-{
-#if defined(_WIN32)
-    LARGE_INTEGER tcounter = {0};
-    uint64_t tick_value = 0u;
-    if (QueryPerformanceCounter(&tcounter) != 0)
-    {
-        tick_value = tcounter.QuadPart;
-    }
 
-    return (uint64_t) (tick_value / (_perf_freq / 1000000ULL));
-#elif defined(__linux__)
-    struct timeval timer = {.tv_sec=0LL, .tv_usec=0LL};
-    (void) gettimeofday(&timer, NULL);
-    return (uint64_t) ((timer.tv_sec * 1000000LL) + timer.tv_usec);
-#else
-#error "Platform not supported"
-#endif // _WIN32
-}
-
-
-// Utility function to log a message to stdout with a timestamp
-static void _log(const char *fmt, ...)
-{
-    char buf[MAX_LOG_MSG_SIZE];
-    uint64_t usecs = timing_usecs_elapsed() - _start_us;
-    uint32_t secs = (uint32_t) (usecs / 1000000u);
-    uint32_t msecs_remaining = ((usecs % 1000000u) / 1000u);
-    int written = snprintf(buf, sizeof(buf), "[%05us %03ums] ", secs, msecs_remaining);
-
-    va_list args;
-    va_start(args, fmt);
-    (void) vsnprintf(buf + written, sizeof(buf) - written, fmt, args);
-    va_end(args);
-
-    printf("%s", buf);
-}
-
-
-// Utility functions for generating random numbers / ASCII strings
-static int _rand_range(int lower, int upper)
-{
-    return (rand() % ((upper - lower) + 1)) + lower;
-    //return (rand() % (upper - lower)) + lower;
-}
-
-
-static void _rand_str(unsigned char *output, hashtable_size_t *num_chars, bool ascii_only)
-{
-    *num_chars = (hashtable_size_t) _rand_range(MIN_STR_LEN, MAX_STR_LEN);
-
-    // By default, generate from all printable chars
-    int low = 0x21;
-    int high = 0x7e;
-
-    if (!ascii_only)
-    {
-        // Unless ascii_only flag is unset, in which case all bytes values are used
-        low = 0x0;
-        high = 0xfe;
-    }
-
-    for (unsigned int i = 0; i < *num_chars; i++)
-    {
-        output[i] = (unsigned char) _rand_range(low, high);
-    }
-
-    output[*num_chars] = '\0';
-}
 
 
 static int _run_perf_test(bool ascii_only)
 {
-    if (hashtable_create(&_table, NULL, _buffer, sizeof(_buffer)) < 0)
+    hashtable_config_t config;
+    (void) hashtable_default_config(&config, sizeof(_buffer));
+    config.array_count = 4026571;
+
+    if (hashtable_create(&_table, &config, _buffer, sizeof(_buffer)) < 0)
     {
         printf("%s\n", hashtable_error_message());
         return -1;
@@ -229,20 +114,20 @@ static int _run_perf_test(bool ascii_only)
     char tablesize_buf[32];
     (void) sizesprint(sizeof(_buffer) - bytes_available, tablesize_buf, sizeof(tablesize_buf));
 
-    _log("Buffer size %s\n", bufsize_buf);
-    _log("%s of buffer is used for table array\n", tablesize_buf);
-    _log("%s of buffer remains for key/value data\n", rmsize_buf);
+    test_log("Buffer size %s\n", bufsize_buf);
+    test_log("%s of buffer is used for table array\n", tablesize_buf);
+    test_log("%s of buffer remains for key/value data\n", rmsize_buf);
 
 	char itemcount_str[64u];
 	_fmt_int_with_commas((long) ITEM_INSERT_COUNT, itemcount_str);
 
-    _log("Generating %s random key/value pairs, all keys/values are %u-%u bytes in size\n",
-         itemcount_str, MIN_STR_LEN, MAX_STR_LEN);
+    test_log("Generating %s random key/value pairs, all keys/values are %u-%u bytes in size\n",
+        itemcount_str, MIN_STR_LEN, MAX_STR_LEN);
 
     for (uint32_t i = 0u; i < ITEM_INSERT_COUNT; i++)
     {
-        _rand_str(_test_pairs[i].key, &_test_pairs[i].key_size, ascii_only);
-        _rand_str(_test_pairs[i].value, &_test_pairs[i].value_size, ascii_only);
+        rand_str(_test_pairs[i].key, &_test_pairs[i].key_size, ascii_only);
+        rand_str(_test_pairs[i].value, &_test_pairs[i].value_size, ascii_only);
     }
 
     unsigned char *firstkey = _test_pairs[0].key;
@@ -273,12 +158,12 @@ static int _run_perf_test(bool ascii_only)
         lastvalue = (unsigned char *) lastvaluebuf;
     }
 
-    _log("first key   : %s\n", firstkey);
-    _log("first value : %s\n", firstvalue);
-    _log("last key    : %s\n", lastkey);
-    _log("last value  : %s\n", lastvalue);
+    test_log("first key   : %s\n", firstkey);
+    test_log("first value : %s\n", firstvalue);
+    test_log("last key    : %s\n", lastkey);
+    test_log("last value  : %s\n", lastvalue);
 
-    _log("Inserting all %s key/value pairs into the table\n", itemcount_str);
+    test_log("Inserting all %s key/value pairs into the table\n", itemcount_str);
 
     uint64_t total_insert_us = 0u;
     uint64_t longest_insert_us = 0u;
@@ -352,8 +237,8 @@ static int _run_perf_test(bool ascii_only)
     char totalslots_str[64u];
     _fmt_int_with_commas((long) _table.array_slots_used, slotsused_str);
     _fmt_int_with_commas((long) _table.config.array_count, totalslots_str);
-    _log("All items inserted, %s remaining, %s/%s array slots used\n",
-         rmsize_buf, slotsused_str, totalslots_str);
+    test_log("All items inserted, %s remaining, %s/%s array slots used\n",
+             rmsize_buf, slotsused_str, totalslots_str);
 
     uint64_t total_retrieve_us = 0u;
     uint64_t longest_retrieve_us = 0u;
@@ -396,7 +281,7 @@ static int _run_perf_test(bool ascii_only)
 
     double avg_retrieve_us = ((double) total_retrieve_us) / ((double) ITEM_INSERT_COUNT);
 
-    _log("All %s items retrieved & verified via hashtable_retrieve\n", itemcount_str);
+    test_log("All %s items retrieved & verified via hashtable_retrieve\n", itemcount_str);
 
     uint64_t total_remove_us = 0u;
     uint64_t longest_remove_us = 0u;
@@ -423,7 +308,7 @@ static int _run_perf_test(bool ascii_only)
     double avg_remove_us = ((double) total_remove_us) / ((double) ITEM_INSERT_COUNT);
 
     _fmt_int_with_commas((long) _table.array_slots_used, slotsused_str);
-    _log("All items removed via hashtable_remove, %s/%s array slots used\n", slotsused_str, totalslots_str);
+    test_log("All items removed via hashtable_remove, %s/%s array slots used\n", slotsused_str, totalslots_str);
 
     // Verify all remove items are indeed removed, according to hashtable_has_key
     for (uint32_t i = 0u; i < ITEM_INSERT_COUNT; i++)
@@ -435,9 +320,9 @@ static int _run_perf_test(bool ascii_only)
         }
     }
 
-    _log("Removal of all items verified via hashtable_has_key\n");
+    test_log("Removal of all items verified via hashtable_has_key\n");
 
-    _log("Inserting all %s items into the table again\n", itemcount_str);
+    test_log("Inserting all %s items into the table again\n", itemcount_str);
 
     uint64_t total_after_insert_us = 0u;
     uint64_t longest_after_insert_us = 0u;
@@ -464,9 +349,8 @@ static int _run_perf_test(bool ascii_only)
     double avg_after_insert_us = ((double) total_after_insert_us) / ((double) ITEM_INSERT_COUNT);
 
     _fmt_int_with_commas((long) _table.array_slots_used, slotsused_str);
-    _log("All items re-inserted, %s/%s array slots used\n", slotsused_str, totalslots_str);
-
-    _log("Done\n");
+    test_log("All items re-inserted, %s/%s array slots used\n", slotsused_str, totalslots_str);
+    test_log("Done\n");
 
     printf("\n");
     printf("Longest initial hashtable_insert time, microsecs    : %"PRIu64"\n", longest_insert_us);
@@ -488,31 +372,18 @@ static int _run_perf_test(bool ascii_only)
 
 int main(void)
 {
-    // Setup timing function
-#if defined(_WIN32)
-    LARGE_INTEGER tcounter = {0};
-    if (QueryPerformanceFrequency(&tcounter) != 0)
-    {
-        _perf_freq = tcounter.QuadPart;
-    }
-#elif defined(__linux__)
-    // Nothing to do
-#else
-#error "Platform not supported"
-#endif // _WIN32
-
-    _start_us = timing_usecs_elapsed();
-    srand((unsigned int) _start_us);
+    timing_init();
+    srand((unsigned int) timing_usecs_elapsed());
 
     printf("\nhashtable performance smoke test (hashtable "HASHTABLE_LIB_VERSION")\n\n");
 
-    _log("Running test with randomly-generated ASCII key/value data\n");
+    test_log("Running test with randomly-generated ASCII key/value data\n");
     if (_run_perf_test(true) < 0)
     {
         return -1;
     }
 
     printf("\n");
-    _log("Running test with randomly-generated binary key/value data\n");
+    test_log("Running test with randomly-generated binary key/value data\n");
     return _run_perf_test(false);
 }

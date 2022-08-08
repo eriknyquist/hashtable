@@ -26,6 +26,27 @@
  *
  * \include example_main.c
  *
+ * \section perftest_sec Performance visualization
+ *
+ * The following graph shows the results from a test program which creates a hashtable
+ * instance with a 28MB buffer, and inserts items until the buffer is full (each key
+ * is a 32-bit unsigned integer, and all values are NULL / 0 bytes).
+ *
+ * After every 10,000 items inserted, the test program performs the following checks;
+ *
+ * - Divide the time taken for the last 10,000 item insertions, by 10,000, to get the
+ *   average insertion time
+ * - Retrieve all items in the table, and divide the time taken by the number of items
+ *   in the table, to get the average item retrieval time
+ * - Generate 1,000 keys that are not in the table, and check if they exist using
+ *   <code>hashtable_has_key</code>. Divide the time taken for checking all keys by
+ *   1000 to get the average time to check for a bad key.
+ *
+ * Test executed on a system with an Intel Core-i7 running Debian GNU/Linux 10 (buster)
+ * with Linux debian 4.19.0-21-amd64.
+ *
+ * \image html extras/performance_graph.png
+ *
  * \section features_sec Features/limitations
  *
  * - Implemented in pure C99, and requires only `stdint.h` and `string.h`.
