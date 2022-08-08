@@ -434,6 +434,7 @@ int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
         ERROR("NULL pointer passed to function");
         return -1;
     }
+#endif // HASHTABLE_DISABLE_PARAM_VALIDATION
 
     if (NULL == config)
     {
@@ -459,7 +460,6 @@ int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
 
         (void) memcpy(&table->config, config, sizeof(table->config));
     }
-#endif // HASHTABLE_DISABLE_PARAM_VALIDATION
 
     int ret = _setup_new_table(table, table->config.array_count, buffer, buffer_size);
     if (0 != ret)
