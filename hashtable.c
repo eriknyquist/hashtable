@@ -27,7 +27,7 @@
  * If there is enough space, we will try to size the table array to
  * occupy this percentage of the buffer provided for a hashtable
  */
-#define IDEAL_BUFFER_TABLE_PERCENT (12u)
+#define IDEAL_BUFFER_TABLE_PERCENT (16u)
 
 
 /**
