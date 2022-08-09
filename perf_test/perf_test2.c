@@ -21,7 +21,7 @@ static uint64_t _perf_freq;
 
 
 // Size of statically-allocated buffer passed to hashtable_create
-#define BUFFER_SIZE (1024 * 1024 * 28)
+#define BUFFER_SIZE (1024 * 1024 * 16)
 
 
 static uint8_t _buffer[BUFFER_SIZE];
@@ -71,11 +71,11 @@ int _check_for_1k_bad_keys(hashtable_t *table, uint64_t *avg_badkey_ns)
 }
 
 
-static int _insert_10k_items(hashtable_t *table)
+static int _insert_2k_items(hashtable_t *table)
 {
-    // Insert 10000 items
+    // Insert 2000 items
     uint64_t before_insert = timing_usecs_elapsed();
-    for (int i = 0; i < 10000; i++)
+    for (int i = 0; i < 2000; i++)
     {
         int ret = hashtable_insert(table, (char *) &_insert_counter, sizeof(_insert_counter),
                                    NULL, 0u);
@@ -88,7 +88,7 @@ static int _insert_10k_items(hashtable_t *table)
         _insert_counter += 1u;
     }
 
-    uint64_t avg_insert_ns = (timing_usecs_elapsed() - before_insert) / 10u;
+    uint64_t avg_insert_ns = (timing_usecs_elapsed() - before_insert) / 2;
     uint64_t avg_retrieve_ns = 0u;
 
     int ret = _retrieve_all_and_time(table, &avg_retrieve_ns);
@@ -122,8 +122,8 @@ int main(void)
         return -1;
     }
 
-    // Insert 10k items and print status, until the table is full
-    while (_insert_10k_items(&_table) == 0);
+    // Insert 2k items and print status, until the table is full
+    while (_insert_2k_items(&_table) == 0);
 
     return 0;
 }

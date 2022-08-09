@@ -3,6 +3,7 @@
 import os
 import sys
 
+import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -39,8 +40,9 @@ def main():
     fig.set_facecolor('#333333')
     ax1.set_facecolor('#333333')
     ax2 = ax1.twinx()
+    ax1.grid(linestyle='dotted')
 
-    ax1.set_title("28MB hashtable stress test", weight='bold', color='#ffffff')
+    ax1.set_title("16MB hashtable stress test", weight='bold', color='#ffffff')
     ax1.get_xaxis().set_major_formatter(matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
     ax2.get_yaxis().set_major_formatter(matplotlib.ticker.FormatStrFormatter('%.2f'))
 
@@ -58,6 +60,11 @@ def main():
     for text in ax2.legend(bbox_to_anchor=(1,1), loc='upper right', ncol=1).get_texts():
         text.set_color('r')
 
+    l = ax1.get_ylim()
+    l2 = ax2.get_ylim()
+    f = lambda x : l2[0]+(x-l[0])/(l[1]-l[0])*(l2[1]-l2[0])
+    ticks = f(ax1.get_yticks())
+    ax2.yaxis.set_major_locator(matplotlib.ticker.FixedLocator(ticks))
 
     ax2.spines['bottom'].set_color('#ffffff')
     ax2.spines['top'].set_color('#ffffff')
