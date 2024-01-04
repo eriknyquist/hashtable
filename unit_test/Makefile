@@ -25,16 +25,13 @@ TEST_PROG := $(OUTPUT_DIR)/test_hashtable
 
 SRC_FILES := ../hashtable.c test_hashtable.c unity/src/unity.c
 INCLUDES := -Iunity/src -I../
-CFLAGS := -Wall -pedantic -std=c99
+CFLAGS := -Wall -Wextra -pedantic -g -O0 -std=c99 -fsanitize=address,undefined
 
 .PHONY: clean test
 
 default: test
 
 all: clean test
-
-debug: CFLAGS += -g -O0
-debug: $(TEST_PROG)
 
 test: $(TEST_PROG)
 

@@ -60,6 +60,57 @@ static uint32_t _fnv1a_hash(const char *data, const hashtable_size_t size)
 
 
 /**
+ * Append a new tail item to a list of keypairs
+ *
+ * @param list   Pointer to list to append
+ * @param pair   Pointer to keypair to append
+ */
+static void _list_append(_keyval_pair_list_t *list, _keyval_pair_t *pair)
+{
+    if (NULL == list->head)
+    {
+        list->head = pair;
+        list->tail = pair;
+    }
+    else
+    {
+        list->tail->next = pair;
+        list->tail = pair;
+    }
+
+    pair->next = NULL;
+}
+
+
+/**
+ * Remove an item from any position in a list of keypairs
+ *
+ * @param list   Pointer to list to remove from
+ * @param pair   Pointer to keypair to remove
+ * @param prev   Pointer to previous keypair in the list
+ */
+static void _list_remove(_keyval_pair_list_t *list, _keyval_pair_t *pair, _keyval_pair_t *prev)
+{
+    if (pair == list->head)
+    {
+        list->head = pair->next;
+    }
+
+    if (pair == list->tail)
+    {
+        list->tail = prev;
+    }
+
+    if (NULL != prev)
+    {
+        prev->next = pair->next;
+    }
+
+    pair->next = NULL;
+}
+
+
+/**
  * Calculate a hash for the given key data, and return a pointer to the list at the
  * corresponding table index, such that 'table_index := hash (mod) max_array_count'
  *
@@ -103,22 +154,8 @@ static _keyval_pair_t *_search_free_list(hashtable_t *table, size_t size_require
         {
             /* Found a freed pair that is the same size or larger than what we need,
              * so remove it from the free list and return a pointer */
-            if (curr == td->data_block->freelist.head)
-            {
-                td->data_block->freelist.head = curr->next;
-            }
+             _list_remove(&td->data_block->freelist, curr, prev);
 
-            if (curr == td->data_block->freelist.tail)
-            {
-                td->data_block->freelist.tail = prev;
-            }
-
-            if (NULL != prev)
-            {
-                prev->next = curr->next;
-            }
-
-            curr->next = NULL;
             return curr;
         }
 
@@ -170,12 +207,12 @@ static _keyval_pair_t *_store_keyval_pair(hashtable_t *table, const char *key, c
         // There is space in the data block
         ret = (_keyval_pair_t *) (td->data_block->data + td->data_block->bytes_used);
 
-        // Increment bytes used
-        td->data_block->bytes_used += size_required;
+        // Increment bytes used (round up to nearest multiple of system pointer size, for alignment)
+        size_t ptr_size = sizeof(int *);
+        td->data_block->bytes_used += ((size_required + (ptr_size - 1u)) & ~(ptr_size - 1u));
     }
 
     // Populate new entry
-    ret->next = NULL;
     ret->key_size = key_size;
     ret->value_size = value_size;
     (void) memcpy(ret->data, key, key_size);
@@ -199,7 +236,7 @@ static _keyval_pair_t *_store_keyval_pair(hashtable_t *table, const char *key, c
  *
  * @return 0 if successful, -1 if an error occurred
  */
-static int _setup_new_table(hashtable_t *table, uint32_t array_count, void *buffer, size_t buffer_size)
+static int _setup_new_table(uint32_t array_count, void *buffer, size_t buffer_size)
 {
     size_t array_size = ARRAY_SIZE_BYTES(array_count);
     size_t min_required_size = HASHTABLE_MIN_BUFFER_SIZE(array_count);
@@ -251,7 +288,7 @@ static int _setup_new_table(hashtable_t *table, uint32_t array_count, void *buff
  *
  * @return Pointer to key/val pair with matching key data, or NULL if none was found
  */
-static _keyval_pair_t *_search_list_by_key(hashtable_t *table, _keyval_pair_list_t *list,
+static _keyval_pair_t *_search_list_by_key(_keyval_pair_list_t *list,
                                            const char *key, const hashtable_size_t key_size,
                                            _keyval_pair_t **previous)
 {
@@ -295,45 +332,13 @@ static int _remove_from_table(hashtable_t *table, _keyval_pair_list_t *list,
                               _keyval_pair_t *item, _keyval_pair_t *prev)
 {
     // Remove item from table list
-    if (item == list->head)
-    {
-        list->head = item->next;
-    }
-
-    if (item == list->tail)
-    {
-        list->tail = prev;
-    }
-
-    if (NULL != prev)
-    {
-        prev->next = item->next;
-    }
-
-    item->next = NULL;
-
-    // Is the list empty now?
-    if (list->head == NULL)
-    {
-        table->array_slots_used -= 1u;
-    }
+    _list_remove(list, item, prev);
 
     // Add item to free list
     _keyval_pair_table_data_t *td = (_keyval_pair_table_data_t *) table->table_data;
-    _keyval_pair_list_t *freelist = &td->data_block->freelist;
-
-    if (NULL == freelist->head)
-    {
-        freelist->head = item;
-        freelist->tail = item;
-    }
-    else
-    {
-        freelist->tail->next = item;
-        freelist->tail = item;
-    }
-
+    _list_append(&td->data_block->freelist, item);
     table->entry_count -= 1u;
+
     return 0;
 }
 
@@ -371,7 +376,7 @@ static int _insert_keyval_pair(hashtable_t *table, const char *key, const hashta
     _keyval_pair_list_t *list = _get_table_list_by_key(table, key, key_size);
 
     _keyval_pair_t *prev = NULL;
-    _keyval_pair_t *pair = _search_list_by_key(table, list, key, key_size, &prev);
+    _keyval_pair_t *pair = _search_list_by_key(list, key, key_size, &prev);
     if (NULL != pair)
     {
         // Item with this key already exists, check if new item can fit in existing slot
@@ -404,21 +409,7 @@ static int _insert_keyval_pair(hashtable_t *table, const char *key, const hashta
         return 1;
     }
 
-    // Add new key/val pair into the list at the current slot in the table
-    if (NULL == list->head)
-    {
-        // First item in this slot
-        list->head = pair;
-        list->tail = pair;
-        table->array_slots_used += 1u;
-    }
-    else
-    {
-        list->tail->next = pair;
-        list->tail = pair;
-    }
-
-    pair->next = NULL;
+    _list_append(list, pair);
     table->entry_count += 1u;
 
     return 0;
@@ -464,13 +455,12 @@ int hashtable_create(hashtable_t *table, const hashtable_config_t *config,
         (void) memcpy(&table->config, config, sizeof(table->config));
     }
 
-    int ret = _setup_new_table(table, table->config.array_count, buffer, buffer_size);
+    int ret = _setup_new_table(table->config.array_count, buffer, buffer_size);
     if (0 != ret)
     {
         return ret;
     }
 
-    table->array_slots_used = 0u;
     table->entry_count = 0u;
     table->table_data = buffer;
     table->data_size = buffer_size;
@@ -525,7 +515,7 @@ int hashtable_remove(hashtable_t *table, const char *key, const hashtable_size_t
     _keyval_pair_list_t *list = _get_table_list_by_key(table, key, key_size);
 
     _keyval_pair_t *prev = NULL;
-    _keyval_pair_t *pair = _search_list_by_key(table, list, key, key_size, &prev);
+    _keyval_pair_t *pair = _search_list_by_key(list, key, key_size, &prev);
     if (NULL == pair)
     {
         // Item does not exist
@@ -552,7 +542,7 @@ int hashtable_retrieve(hashtable_t *table, const char *key, const hashtable_size
 
     _keyval_pair_list_t *list = _get_table_list_by_key(table, key, key_size);
 
-    _keyval_pair_t *pair = _search_list_by_key(table, list, key, key_size, NULL);
+    _keyval_pair_t *pair = _search_list_by_key(list, key, key_size, NULL);
     if (NULL == pair)
     {
         // Item does not exist
@@ -588,7 +578,7 @@ int hashtable_has_key(hashtable_t *table, const char *key, const hashtable_size_
 
     _keyval_pair_list_t *list = _get_table_list_by_key(table, key, key_size);
 
-    _keyval_pair_t *pair = _search_list_by_key(table, list, key, key_size, NULL);
+    _keyval_pair_t *pair = _search_list_by_key(list, key, key_size, NULL);
     if (NULL == pair)
     {
         // Item does not exist

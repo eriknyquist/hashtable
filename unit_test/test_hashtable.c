@@ -810,6 +810,7 @@ void test_hashtable_next_item_only_keys(void)
     // Insert 'numkeys' key/val pairs, with NULL values
     for (int i = 0; i < numkeys; i++)
     {
+        pairs[i].removed = false;
         _rand_str(pairs[i].key, &pairs[i].key_size);
         TEST_ASSERT_EQUAL_INT(0, hashtable_insert(&table, pairs[i].key, pairs[i].key_size, NULL, 0));
     }

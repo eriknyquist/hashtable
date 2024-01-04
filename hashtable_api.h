@@ -180,7 +180,6 @@ typedef struct
 {
     hashtable_config_t config;    ///< Hashtable config data
     uint32_t entry_count;         ///< Number of entries in the table
-    uint32_t array_slots_used;    ///< Number of array slots with one or more items in the list
     size_t data_size;             ///< Size of data section
     void *table_data;             ///< Pointer to buffer for data section
 } hashtable_t;
