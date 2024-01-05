@@ -17,7 +17,7 @@ recent version of GCC).
 Generate performance visualization
 ----------------------------------
 
-Requires python 3.x and the python ``matplotlib`` package.
+Requires GNU make, python 3.x and the python ``matplotlib`` package.
 
 ::
 
