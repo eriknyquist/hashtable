@@ -127,7 +127,7 @@ int rand_range(int lower, int upper)
 }
 
 
-void rand_str(unsigned char *output, hashtable_size_t *num_chars, bool ascii_only)
+void rand_str(char *output, hashtable_size_t *num_chars, bool ascii_only)
 {
     *num_chars = (hashtable_size_t) rand_range(MIN_STR_LEN, MAX_STR_LEN);
 
@@ -142,9 +142,9 @@ void rand_str(unsigned char *output, hashtable_size_t *num_chars, bool ascii_onl
         high = 0xfe;
     }
 
-    for (unsigned int i = 0; i < *num_chars; i++)
+    for (hashtable_size_t i = 0; i < *num_chars; i++)
     {
-        output[i] = (unsigned char) rand_range(low, high);
+        output[i] = (char) rand_range(low, high);
     }
 
     output[*num_chars] = '\0';

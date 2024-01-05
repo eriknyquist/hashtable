@@ -38,6 +38,12 @@
     (((array_count) * sizeof(_keyval_pair_list_t)) + sizeof(_keyval_pair_list_table_t))
 
 
+/**
+ * @brief Helper macro for rounding a number up to the nearest multiple of the size of a pointer
+ */
+#define ROUND_UP_PTRSIZE(size) (((size) + (sizeof(int *) - 1u)) & ~(sizeof(int *) - 1u))
+
+
 static char _error_msg[MAX_ERROR_MSG_SIZE]  = {'\0'};
 
 
@@ -149,7 +155,7 @@ static _keyval_pair_t *_search_free_list(hashtable_t *table, size_t size_require
 
     while (NULL != curr)
     {
-        size_t size_available = sizeof(_keyval_pair_t) + curr->key_size + curr->value_size;
+        size_t size_available = ROUND_UP_PTRSIZE(sizeof(_keyval_pair_t) + curr->key_size + curr->value_size);
         if (size_available >= size_required)
         {
             /* Found a freed pair that is the same size or larger than what we need,
@@ -166,7 +172,6 @@ static _keyval_pair_t *_search_free_list(hashtable_t *table, size_t size_require
 
     return NULL;
 }
-
 
 /**
  * Store a new key/value pair in the table->table_data section of a hashtable.
@@ -188,7 +193,7 @@ static _keyval_pair_t *_store_keyval_pair(hashtable_t *table, const char *key, c
                                           const char *value, const hashtable_size_t value_size)
 {
     _keyval_pair_t *ret = NULL;
-    size_t size_required = sizeof(_keyval_pair_t) + key_size + value_size;
+    size_t size_required = ROUND_UP_PTRSIZE(sizeof(_keyval_pair_t) + key_size + value_size);
 
     // Prefer finding a suitable block in the free list, so check there first
     ret = _search_free_list(table, size_required);
@@ -207,9 +212,8 @@ static _keyval_pair_t *_store_keyval_pair(hashtable_t *table, const char *key, c
         // There is space in the data block
         ret = (_keyval_pair_t *) (td->data_block->data + td->data_block->bytes_used);
 
-        // Increment bytes used (round up to nearest multiple of system pointer size, for alignment)
-        size_t ptr_size = sizeof(int *);
-        td->data_block->bytes_used += ((size_required + (ptr_size - 1u)) & ~(ptr_size - 1u));
+        // Increment bytes used
+        td->data_block->bytes_used += size_required;
     }
 
     // Populate new entry

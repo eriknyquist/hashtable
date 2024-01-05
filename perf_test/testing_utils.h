@@ -10,10 +10,10 @@
 
 
 // Min. size of a randomly-generated key or value
-#define MIN_STR_LEN (16u)
+#define MIN_STR_LEN (2u)
 
 // Max. size of a randomly-generated key or value
-#define MAX_STR_LEN (32u)
+#define MAX_STR_LEN (16u)
 
 
 int sizesprint(size_t size, char *buf, unsigned int bufsize);
@@ -26,7 +26,7 @@ void test_log(const char *fmt, ...);
 
 int rand_range(int lower, int upper);
 
-void rand_str(unsigned char *output, hashtable_size_t *num_chars, bool ascii_only);
+void rand_str(char *output, hashtable_size_t *num_chars, bool ascii_only);
 
 
 #endif // TESTING_UTILS_H

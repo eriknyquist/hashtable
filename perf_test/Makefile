@@ -25,7 +25,7 @@ TEST_PROG := $(OUTPUT_DIR)/perf_test
 
 SRC_FILES := perf_test2.c testing_utils.c ../hashtable.c
 INCLUDES := -Iunity/src -I../
-CFLAGS := -Wall -pedantic -std=c99 -O2 -DHASHTABLE_SIZE_T_UINT16 -DHASHTABLE_DISABLE_PARAM_VALIDATION
+CFLAGS := -Wall -Wextra -pedantic -std=c99 -DHASHTABLE_SIZE_T_UINT16 -DHASHTABLE_DISABLE_PARAM_VALIDATION
 
 .PHONY: clean test
 
@@ -33,6 +33,7 @@ default: test
 
 all: clean test
 
+#debug: CFLAGS += -g -O0 -fsanitize=address,undefined
 debug: CFLAGS += -g -O0
 debug: $(TEST_PROG)
 
@@ -42,6 +43,7 @@ run_gprof:
 	./$(TEST_PROG)
 	gprof $(TEST_PROG) gmon.out > perf_test_analysis.txt
 
+test: CFLAGS += -O2
 test: $(TEST_PROG)
 	@echo Running $(TEST_PROG)...
 	$(TEST_PROG) > $(TEST_PROG).output.txt

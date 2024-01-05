@@ -42,8 +42,8 @@
  *   <code>hashtable_has_key</code>. Divide the time taken for checking all keys by
  *   1000 to get the average time to check for a bad key.
  *
- * Test executed on a system with an Intel Core-i7 running Debian GNU/Linux 10 (buster)
- * with Linux debian 4.19.0-21-amd64.
+ * Test was compiled with "-O2" optimization level and executed on a system with an
+ * Intel Core-i7 running Windows 10.
  *
  * \image html extras/performance_graph.png
  *

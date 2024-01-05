@@ -720,7 +720,7 @@ void test_hashtable_bytes_remaining_overwrite_largervalue(void)
     // Generate a new value (all 0xff this time) and insert it with the same key,
     // just has to be the same size as the original value
     char value2[MAX_STR_LEN + 1];
-    size_t value2_size = value1_size + 1;
+    size_t value2_size = value1_size + 10;
 
     (void) memset(value2, 0xff, sizeof(value2_size));
 
