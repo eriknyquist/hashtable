@@ -1,4 +1,4 @@
-/*! \mainpage A lightweight separate-chaining hashtable in C
+/*! \mainpage A lightweight separate-chaining, arena-backed hashtable in C
  *
  * \section intro_sec Introduction
  *
@@ -115,7 +115,7 @@
 #include <stdint.h>
 
 
-#define HASHTABLE_LIB_VERSION "v0.1.0"
+#define HASHTABLE_LIB_VERSION "v0.1.1"
 
 
 #if !defined(HASHTABLE_SIZE_T_UINT16) && !defined(HASHTABLE_SIZE_T_UINT32) && !defined(HASHTABLE_SIZE_T_SYS)
