@@ -17,7 +17,7 @@
 
 
 // Size of statically-allocated buffer passed to hashtable_create
-#define BUFFER_SIZE (1024 * 1024 * 16)
+#define BUFFER_SIZE (1024 * 1024 * 32)
 
 
 static uint8_t _buffer[BUFFER_SIZE];
@@ -70,7 +70,7 @@ int _check_for_1k_bad_keys(hashtable_t *table, uint64_t *avg_badkey_ns)
 static int _insert_2k_items(hashtable_t *table)
 {
     // Insert items
-    const int insert_count = 8000;
+    const int insert_count = 10000;
     uint64_t before_insert = timing_usecs_elapsed();
     for (int i = 0; i < insert_count; i++)
     {
@@ -85,8 +85,8 @@ static int _insert_2k_items(hashtable_t *table)
         _insert_counter += 1u;
     }
 
-    // Since we did 8000 iterations, we can divide by 10 to convert microsecs to nanosecs
-    uint64_t avg_insert_ns = (timing_usecs_elapsed() - before_insert) / 8;
+    // Since we did 10000 iterations, we can divide by 10 to convert microsecs to nanosecs
+    uint64_t avg_insert_ns = (timing_usecs_elapsed() - before_insert) / 10u;
     uint64_t avg_retrieve_ns = 0u;
 
     int ret = _retrieve_all_and_time(table, &avg_retrieve_ns);

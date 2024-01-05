@@ -25,7 +25,7 @@
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">hashtable v0.1.1
    </div>
-   <div id="projectbrief">A lightweight separate-chaining hashtable in C</div>
+   <div id="projectbrief">A lightweight separate-chaining arena-backed hashtable in C</div>
   </td>
  </tr>
  </tbody>
@@ -83,132 +83,132 @@ $(function() {
 <div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// if !defined..</span></div>
 <div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160; </div>
 <div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160; </div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;<span class="preprocessor">#if defined(HASHTABLE_SIZE_T_UINT16)</span></div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;<span class="keyword">typedef</span> uint16_t hashtable_size_t;</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;<span class="preprocessor">#elif defined(HASHTABLE_SIZE_T_UINT32)</span></div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;<span class="keyword">typedef</span> uint32_t hashtable_size_t;</div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;<span class="preprocessor">#elif defined(HASHTABLE_SIZE_T_SYS)</span></div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;<span class="keyword">typedef</span> <span class="keywordtype">size_t</span> hashtable_size_t;</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;<span class="preprocessor">#else</span></div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;<span class="preprocessor">#error(&quot;HASHTABLE_SIZE_T option not defined&quot;</span>)</div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// if defined....</span></div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160; </div>
-<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160; </div>
-<div class="line"><a name="l00140"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a227297f61e6992e065e4a878eeef369c">  140</a></span>&#160;<span class="preprocessor">#define HASHTABLE_MIN_ARRAY_COUNT (10u)</span></div>
-<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160; </div>
-<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160; </div>
-<div class="line"><a name="l00149"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#ad1fd0e1c9435bc31ead1185f7b4a5d57">  149</a></span>&#160;<span class="preprocessor">#define HASHTABLE_MIN_BUFFER_SIZE(array_count)                                 \</span></div>
-<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;<span class="preprocessor">    (sizeof(_keyval_pair_table_data_t) + sizeof(_keyval_pair_list_table_t) +   \</span></div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;<span class="preprocessor">    ((array_count) * sizeof(_keyval_pair_list_t)) +                            \</span></div>
-<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;<span class="preprocessor">    sizeof(_keyval_pair_data_block_t))</span></div>
-<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160; </div>
-<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160; </div>
-<div class="line"><a name="l00163"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#aaff1f8de1b5e4a9ddbdf88a9549e8907">  163</a></span>&#160;<span class="keyword">typedef</span> uint32_t (*<a class="code" href="hashtable__api_8h.html#aaff1f8de1b5e4a9ddbdf88a9549e8907">hashtable_hashfunc_t</a>)(<span class="keyword">const</span> <span class="keywordtype">char</span> *data, <span class="keyword">const</span> hashtable_size_t size);</div>
-<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160; </div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160; </div>
-<div class="line"><a name="l00169"></a><span class="lineno"><a class="line" href="structhashtable__config__t.html">  169</a></span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct</span></div>
-<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;{</div>
-<div class="line"><a name="l00171"></a><span class="lineno"><a class="line" href="structhashtable__config__t.html#a4527e2bffdfccc748eb501b6461e6284">  171</a></span>&#160;    <a class="code" href="hashtable__api_8h.html#aaff1f8de1b5e4a9ddbdf88a9549e8907">hashtable_hashfunc_t</a> <a class="code" href="structhashtable__config__t.html#a4527e2bffdfccc748eb501b6461e6284">hash</a>;    </div>
-<div class="line"><a name="l00172"></a><span class="lineno"><a class="line" href="structhashtable__config__t.html#a9d8a291c925177b83923523141e4ef3a">  172</a></span>&#160;    uint32_t <a class="code" href="structhashtable__config__t.html#a9d8a291c925177b83923523141e4ef3a">array_count</a>;         </div>
-<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;} <a class="code" href="structhashtable__config__t.html">hashtable_config_t</a>;</div>
-<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160; </div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160; </div>
-<div class="line"><a name="l00179"></a><span class="lineno"><a class="line" href="structhashtable__t.html">  179</a></span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct</span></div>
-<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;{</div>
-<div class="line"><a name="l00181"></a><span class="lineno"><a class="line" href="structhashtable__t.html#ace8cbe560239634c25d7c6879eacf7fc">  181</a></span>&#160;    <a class="code" href="structhashtable__config__t.html">hashtable_config_t</a> <a class="code" href="structhashtable__t.html#ace8cbe560239634c25d7c6879eacf7fc">config</a>;    </div>
-<div class="line"><a name="l00182"></a><span class="lineno"><a class="line" href="structhashtable__t.html#a3dc4a946903f00c879c3efc192e429a3">  182</a></span>&#160;    uint32_t <a class="code" href="structhashtable__t.html#a3dc4a946903f00c879c3efc192e429a3">entry_count</a>;         </div>
-<div class="line"><a name="l00183"></a><span class="lineno"><a class="line" href="structhashtable__t.html#a8d5cfcf11d4a4bbaadf6002a373d59cd">  183</a></span>&#160;    <span class="keywordtype">size_t</span> <a class="code" href="structhashtable__t.html#a8d5cfcf11d4a4bbaadf6002a373d59cd">data_size</a>;             </div>
-<div class="line"><a name="l00184"></a><span class="lineno"><a class="line" href="structhashtable__t.html#a8f424792805347eb5992d008d883a2a5">  184</a></span>&#160;    <span class="keywordtype">void</span> *<a class="code" href="structhashtable__t.html#a8f424792805347eb5992d008d883a2a5">table_data</a>;             </div>
-<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;} <a class="code" href="structhashtable__t.html">hashtable_t</a>;</div>
-<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160; </div>
-<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160; </div>
-<div class="line"><a name="l00201"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a15986e05c7f0cd9f2cdc8c5b17696b61">  201</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="hashtable__api_8h.html#a15986e05c7f0cd9f2cdc8c5b17696b61">hashtable_create</a>(<a class="code" href="structhashtable__t.html">hashtable_t</a> *table, <span class="keyword">const</span> <a class="code" href="structhashtable__config__t.html">hashtable_config_t</a> *config,</div>
-<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;                     <span class="keywordtype">void</span> *buffer, <span class="keywordtype">size_t</span> buffer_size);</div>
-<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160; </div>
-<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160; </div>
-<div class="line"><a name="l00219"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a7ecf50cf685ca98768a69b328f81e582">  219</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="hashtable__api_8h.html#a7ecf50cf685ca98768a69b328f81e582">hashtable_insert</a>(<a class="code" href="structhashtable__t.html">hashtable_t</a> *table, <span class="keyword">const</span> <span class="keywordtype">char</span> *key, <span class="keyword">const</span> hashtable_size_t key_size,</div>
-<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;                     <span class="keyword">const</span> <span class="keywordtype">char</span> *value, <span class="keyword">const</span> hashtable_size_t value_size);</div>
-<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160; </div>
-<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160; </div>
-<div class="line"><a name="l00234"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a3a97aa30723003954d795a7a8dd4612b">  234</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="hashtable__api_8h.html#a3a97aa30723003954d795a7a8dd4612b">hashtable_remove</a>(<a class="code" href="structhashtable__t.html">hashtable_t</a> *table, <span class="keyword">const</span> <span class="keywordtype">char</span> *key, <span class="keyword">const</span> hashtable_size_t key_size);</div>
-<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160; </div>
-<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160; </div>
-<div class="line"><a name="l00249"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a45f3fe6d72ed5382addf276378966678">  249</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="hashtable__api_8h.html#a45f3fe6d72ed5382addf276378966678">hashtable_retrieve</a>(<a class="code" href="structhashtable__t.html">hashtable_t</a> *table, <span class="keyword">const</span> <span class="keywordtype">char</span> *key, <span class="keyword">const</span> hashtable_size_t key_size,</div>
-<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;                       <span class="keywordtype">char</span> **value, hashtable_size_t *value_size);</div>
-<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160; </div>
-<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160; </div>
-<div class="line"><a name="l00263"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#ae33a0f5ea3aca2454d641bf3fe5357fb">  263</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="hashtable__api_8h.html#ae33a0f5ea3aca2454d641bf3fe5357fb">hashtable_has_key</a>(<a class="code" href="structhashtable__t.html">hashtable_t</a> *table, <span class="keyword">const</span> <span class="keywordtype">char</span> *key, <span class="keyword">const</span> hashtable_size_t key_size);</div>
-<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160; </div>
-<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160; </div>
-<div class="line"><a name="l00275"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a3c093157186aa6d372cb406b3c2c1158">  275</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="hashtable__api_8h.html#a3c093157186aa6d372cb406b3c2c1158">hashtable_bytes_remaining</a>(<a class="code" href="structhashtable__t.html">hashtable_t</a> *table, <span class="keywordtype">size_t</span> *bytes_remaining);</div>
-<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160; </div>
-<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160; </div>
-<div class="line"><a name="l00294"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a1af5b79bf710f1a8dbe6c54ac0c544fc">  294</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="hashtable__api_8h.html#a1af5b79bf710f1a8dbe6c54ac0c544fc">hashtable_next_item</a>(<a class="code" href="structhashtable__t.html">hashtable_t</a> *table, <span class="keywordtype">char</span> **key, hashtable_size_t *key_size,</div>
-<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;                        <span class="keywordtype">char</span> **value, hashtable_size_t *value_size);</div>
-<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160; </div>
-<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160; </div>
-<div class="line"><a name="l00308"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a4e04af9382451a2c86c8e4e84f0a8224">  308</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="hashtable__api_8h.html#a4e04af9382451a2c86c8e4e84f0a8224">hashtable_reset_cursor</a>(<a class="code" href="structhashtable__t.html">hashtable_t</a> *table);</div>
-<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160; </div>
-<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160; </div>
-<div class="line"><a name="l00319"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a79faa7064b9618b87a0506ee6e842bec">  319</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="hashtable__api_8h.html#a79faa7064b9618b87a0506ee6e842bec">hashtable_clear</a>(<a class="code" href="structhashtable__t.html">hashtable_t</a> *table);</div>
-<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160; </div>
-<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160; </div>
-<div class="line"><a name="l00332"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a0c2078dfcfaaad328b8d4d8c4a4bb317">  332</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="hashtable__api_8h.html#a0c2078dfcfaaad328b8d4d8c4a4bb317">hashtable_default_config</a>(<a class="code" href="structhashtable__config__t.html">hashtable_config_t</a> *config, <span class="keywordtype">size_t</span> buffer_size);</div>
-<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160; </div>
-<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160; </div>
-<div class="line"><a name="l00343"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a2a7f481a9b6d1fa17e45fad3f0d781f7">  343</a></span>&#160;<span class="keywordtype">char</span> *<a class="code" href="hashtable__api_8h.html#a2a7f481a9b6d1fa17e45fad3f0d781f7">hashtable_error_message</a>(<span class="keywordtype">void</span>);</div>
-<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160; </div>
-<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160; </div>
-<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;<span class="preprocessor">#ifdef HASHTABLE_PACKED_STRUCT</span></div>
-<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;<span class="preprocessor">#define _HASHTABLE_PACKED __attribute__((packed))</span></div>
-<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;<span class="preprocessor">#else</span></div>
-<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;<span class="preprocessor">#define _HASHTABLE_PACKED</span></div>
-<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// HASHTABLE_PACKED_STRUCT</span></div>
-<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160; </div>
-<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160; </div>
-<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct </span>_keyval_pair</div>
-<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;{</div>
-<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;    <span class="keyword">struct </span>_keyval_pair *next;    </div>
-<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;    hashtable_size_t key_size;    </div>
-<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;    hashtable_size_t value_size;  </div>
-<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;    uint8_t data[];               </div>
-<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;} _HASHTABLE_PACKED _keyval_pair_t;</div>
-<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160; </div>
-<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160; </div>
-<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct</span></div>
-<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;{</div>
-<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;    _keyval_pair_t *head;  </div>
-<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;    _keyval_pair_t *tail;  </div>
-<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;} _keyval_pair_list_t;</div>
-<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160; </div>
-<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160; </div>
-<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct</span></div>
-<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;{</div>
-<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;    _keyval_pair_list_t freelist;  </div>
-<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;    <span class="keywordtype">size_t</span> total_bytes;            </div>
-<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;    <span class="keywordtype">size_t</span> bytes_used;             </div>
-<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;    uint8_t data[];                </div>
-<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;} _keyval_pair_data_block_t;</div>
-<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160; </div>
-<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160; </div>
-<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct</span></div>
-<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;{</div>
-<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;    uint32_t array_count;          </div>
-<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;    _keyval_pair_list_t table[];   </div>
-<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;} _keyval_pair_list_table_t;</div>
-<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160; </div>
-<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160; </div>
-<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct</span></div>
-<div class="line"><a name="l00434"></a><span class="lineno">  434</span>&#160;{</div>
-<div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160;    _keyval_pair_list_table_t *list_table;  </div>
-<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;    _keyval_pair_data_block_t *data_block;  </div>
-<div class="line"><a name="l00437"></a><span class="lineno">  437</span>&#160;    uint32_t cursor_array_index;            </div>
-<div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160;    uint32_t cursor_items_traversed;        </div>
-<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;    _keyval_pair_t *cursor_item;            </div>
-<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160;    uint8_t cursor_limit;                   </div>
-<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160;} _keyval_pair_table_data_t;</div>
-<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160; </div>
-<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// HASHTABLE_API_H</span></div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;<span class="preprocessor">#if defined(HASHTABLE_SIZE_T_UINT16)</span></div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;<span class="keyword">typedef</span> uint16_t <a class="code" href="hashtable__api_8h.html#acab608df8c32a0ef8e8c6fe0cfab1208">hashtable_size_t</a>;</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;<span class="preprocessor">#elif defined(HASHTABLE_SIZE_T_UINT32)</span></div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;<span class="keyword">typedef</span> uint32_t <a class="code" href="hashtable__api_8h.html#acab608df8c32a0ef8e8c6fe0cfab1208">hashtable_size_t</a>;</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;<span class="preprocessor">#elif defined(HASHTABLE_SIZE_T_SYS)</span></div>
+<div class="line"><a name="l00134"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#acab608df8c32a0ef8e8c6fe0cfab1208">  134</a></span>&#160;<span class="keyword">typedef</span> <span class="keywordtype">size_t</span> <a class="code" href="hashtable__api_8h.html#acab608df8c32a0ef8e8c6fe0cfab1208">hashtable_size_t</a>;</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;<span class="preprocessor">#else</span></div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;<span class="preprocessor">#error(&quot;HASHTABLE_SIZE_T option not defined&quot;</span>)</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// if defined....</span></div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160; </div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160; </div>
+<div class="line"><a name="l00143"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a227297f61e6992e065e4a878eeef369c">  143</a></span>&#160;<span class="preprocessor">#define HASHTABLE_MIN_ARRAY_COUNT (10u)</span></div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160; </div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160; </div>
+<div class="line"><a name="l00152"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#ad1fd0e1c9435bc31ead1185f7b4a5d57">  152</a></span>&#160;<span class="preprocessor">#define HASHTABLE_MIN_BUFFER_SIZE(array_count)                                 \</span></div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;<span class="preprocessor">    (sizeof(_keyval_pair_table_data_t) + sizeof(_keyval_pair_list_table_t) +   \</span></div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;<span class="preprocessor">    ((array_count) * sizeof(_keyval_pair_list_t)) +                            \</span></div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;<span class="preprocessor">    sizeof(_keyval_pair_data_block_t))</span></div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160; </div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160; </div>
+<div class="line"><a name="l00166"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#aaff1f8de1b5e4a9ddbdf88a9549e8907">  166</a></span>&#160;<span class="keyword">typedef</span> uint32_t (*<a class="code" href="hashtable__api_8h.html#aaff1f8de1b5e4a9ddbdf88a9549e8907">hashtable_hashfunc_t</a>)(<span class="keyword">const</span> <span class="keywordtype">char</span> *data, <span class="keyword">const</span> <a class="code" href="hashtable__api_8h.html#acab608df8c32a0ef8e8c6fe0cfab1208">hashtable_size_t</a> size);</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160; </div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160; </div>
+<div class="line"><a name="l00172"></a><span class="lineno"><a class="line" href="structhashtable__config__t.html">  172</a></span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct</span></div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;{</div>
+<div class="line"><a name="l00174"></a><span class="lineno"><a class="line" href="structhashtable__config__t.html#a4527e2bffdfccc748eb501b6461e6284">  174</a></span>&#160;    <a class="code" href="hashtable__api_8h.html#aaff1f8de1b5e4a9ddbdf88a9549e8907">hashtable_hashfunc_t</a> <a class="code" href="structhashtable__config__t.html#a4527e2bffdfccc748eb501b6461e6284">hash</a>;    </div>
+<div class="line"><a name="l00175"></a><span class="lineno"><a class="line" href="structhashtable__config__t.html#a9d8a291c925177b83923523141e4ef3a">  175</a></span>&#160;    uint32_t <a class="code" href="structhashtable__config__t.html#a9d8a291c925177b83923523141e4ef3a">array_count</a>;         </div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;} <a class="code" href="structhashtable__config__t.html">hashtable_config_t</a>;</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160; </div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160; </div>
+<div class="line"><a name="l00182"></a><span class="lineno"><a class="line" href="structhashtable__t.html">  182</a></span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct</span></div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;{</div>
+<div class="line"><a name="l00184"></a><span class="lineno"><a class="line" href="structhashtable__t.html#ace8cbe560239634c25d7c6879eacf7fc">  184</a></span>&#160;    <a class="code" href="structhashtable__config__t.html">hashtable_config_t</a> <a class="code" href="structhashtable__t.html#ace8cbe560239634c25d7c6879eacf7fc">config</a>;    </div>
+<div class="line"><a name="l00185"></a><span class="lineno"><a class="line" href="structhashtable__t.html#a3dc4a946903f00c879c3efc192e429a3">  185</a></span>&#160;    uint32_t <a class="code" href="structhashtable__t.html#a3dc4a946903f00c879c3efc192e429a3">entry_count</a>;         </div>
+<div class="line"><a name="l00186"></a><span class="lineno"><a class="line" href="structhashtable__t.html#a8d5cfcf11d4a4bbaadf6002a373d59cd">  186</a></span>&#160;    <span class="keywordtype">size_t</span> <a class="code" href="structhashtable__t.html#a8d5cfcf11d4a4bbaadf6002a373d59cd">data_size</a>;             </div>
+<div class="line"><a name="l00187"></a><span class="lineno"><a class="line" href="structhashtable__t.html#a8f424792805347eb5992d008d883a2a5">  187</a></span>&#160;    <span class="keywordtype">void</span> *<a class="code" href="structhashtable__t.html#a8f424792805347eb5992d008d883a2a5">table_data</a>;             </div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;} <a class="code" href="structhashtable__t.html">hashtable_t</a>;</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160; </div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160; </div>
+<div class="line"><a name="l00204"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a15986e05c7f0cd9f2cdc8c5b17696b61">  204</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="hashtable__api_8h.html#a15986e05c7f0cd9f2cdc8c5b17696b61">hashtable_create</a>(<a class="code" href="structhashtable__t.html">hashtable_t</a> *table, <span class="keyword">const</span> <a class="code" href="structhashtable__config__t.html">hashtable_config_t</a> *config,</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;                     <span class="keywordtype">void</span> *buffer, <span class="keywordtype">size_t</span> buffer_size);</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160; </div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160; </div>
+<div class="line"><a name="l00222"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a7ecf50cf685ca98768a69b328f81e582">  222</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="hashtable__api_8h.html#a7ecf50cf685ca98768a69b328f81e582">hashtable_insert</a>(<a class="code" href="structhashtable__t.html">hashtable_t</a> *table, <span class="keyword">const</span> <span class="keywordtype">char</span> *key, <span class="keyword">const</span> <a class="code" href="hashtable__api_8h.html#acab608df8c32a0ef8e8c6fe0cfab1208">hashtable_size_t</a> key_size,</div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;                     <span class="keyword">const</span> <span class="keywordtype">char</span> *value, <span class="keyword">const</span> <a class="code" href="hashtable__api_8h.html#acab608df8c32a0ef8e8c6fe0cfab1208">hashtable_size_t</a> value_size);</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160; </div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160; </div>
+<div class="line"><a name="l00237"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a3a97aa30723003954d795a7a8dd4612b">  237</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="hashtable__api_8h.html#a3a97aa30723003954d795a7a8dd4612b">hashtable_remove</a>(<a class="code" href="structhashtable__t.html">hashtable_t</a> *table, <span class="keyword">const</span> <span class="keywordtype">char</span> *key, <span class="keyword">const</span> <a class="code" href="hashtable__api_8h.html#acab608df8c32a0ef8e8c6fe0cfab1208">hashtable_size_t</a> key_size);</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160; </div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160; </div>
+<div class="line"><a name="l00252"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a45f3fe6d72ed5382addf276378966678">  252</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="hashtable__api_8h.html#a45f3fe6d72ed5382addf276378966678">hashtable_retrieve</a>(<a class="code" href="structhashtable__t.html">hashtable_t</a> *table, <span class="keyword">const</span> <span class="keywordtype">char</span> *key, <span class="keyword">const</span> <a class="code" href="hashtable__api_8h.html#acab608df8c32a0ef8e8c6fe0cfab1208">hashtable_size_t</a> key_size,</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;                       <span class="keywordtype">char</span> **value, <a class="code" href="hashtable__api_8h.html#acab608df8c32a0ef8e8c6fe0cfab1208">hashtable_size_t</a> *value_size);</div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160; </div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160; </div>
+<div class="line"><a name="l00266"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#ae33a0f5ea3aca2454d641bf3fe5357fb">  266</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="hashtable__api_8h.html#ae33a0f5ea3aca2454d641bf3fe5357fb">hashtable_has_key</a>(<a class="code" href="structhashtable__t.html">hashtable_t</a> *table, <span class="keyword">const</span> <span class="keywordtype">char</span> *key, <span class="keyword">const</span> <a class="code" href="hashtable__api_8h.html#acab608df8c32a0ef8e8c6fe0cfab1208">hashtable_size_t</a> key_size);</div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160; </div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160; </div>
+<div class="line"><a name="l00278"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a3c093157186aa6d372cb406b3c2c1158">  278</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="hashtable__api_8h.html#a3c093157186aa6d372cb406b3c2c1158">hashtable_bytes_remaining</a>(<a class="code" href="structhashtable__t.html">hashtable_t</a> *table, <span class="keywordtype">size_t</span> *bytes_remaining);</div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160; </div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160; </div>
+<div class="line"><a name="l00297"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a1af5b79bf710f1a8dbe6c54ac0c544fc">  297</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="hashtable__api_8h.html#a1af5b79bf710f1a8dbe6c54ac0c544fc">hashtable_next_item</a>(<a class="code" href="structhashtable__t.html">hashtable_t</a> *table, <span class="keywordtype">char</span> **key, <a class="code" href="hashtable__api_8h.html#acab608df8c32a0ef8e8c6fe0cfab1208">hashtable_size_t</a> *key_size,</div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;                        <span class="keywordtype">char</span> **value, <a class="code" href="hashtable__api_8h.html#acab608df8c32a0ef8e8c6fe0cfab1208">hashtable_size_t</a> *value_size);</div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160; </div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160; </div>
+<div class="line"><a name="l00311"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a4e04af9382451a2c86c8e4e84f0a8224">  311</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="hashtable__api_8h.html#a4e04af9382451a2c86c8e4e84f0a8224">hashtable_reset_cursor</a>(<a class="code" href="structhashtable__t.html">hashtable_t</a> *table);</div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160; </div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160; </div>
+<div class="line"><a name="l00322"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a79faa7064b9618b87a0506ee6e842bec">  322</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="hashtable__api_8h.html#a79faa7064b9618b87a0506ee6e842bec">hashtable_clear</a>(<a class="code" href="structhashtable__t.html">hashtable_t</a> *table);</div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160; </div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160; </div>
+<div class="line"><a name="l00335"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a0c2078dfcfaaad328b8d4d8c4a4bb317">  335</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="hashtable__api_8h.html#a0c2078dfcfaaad328b8d4d8c4a4bb317">hashtable_default_config</a>(<a class="code" href="structhashtable__config__t.html">hashtable_config_t</a> *config, <span class="keywordtype">size_t</span> buffer_size);</div>
+<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160; </div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160; </div>
+<div class="line"><a name="l00346"></a><span class="lineno"><a class="line" href="hashtable__api_8h.html#a2a7f481a9b6d1fa17e45fad3f0d781f7">  346</a></span>&#160;<span class="keywordtype">char</span> *<a class="code" href="hashtable__api_8h.html#a2a7f481a9b6d1fa17e45fad3f0d781f7">hashtable_error_message</a>(<span class="keywordtype">void</span>);</div>
+<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160; </div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160; </div>
+<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;<span class="preprocessor">#ifdef HASHTABLE_PACKED_STRUCT</span></div>
+<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;<span class="preprocessor">#define _HASHTABLE_PACKED __attribute__((packed))</span></div>
+<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;<span class="preprocessor">#else</span></div>
+<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;<span class="preprocessor">#define _HASHTABLE_PACKED</span></div>
+<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// HASHTABLE_PACKED_STRUCT</span></div>
+<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160; </div>
+<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160; </div>
+<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct </span>_keyval_pair</div>
+<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;{</div>
+<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;    <span class="keyword">struct </span>_keyval_pair *next;    </div>
+<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;    <a class="code" href="hashtable__api_8h.html#acab608df8c32a0ef8e8c6fe0cfab1208">hashtable_size_t</a> key_size;    </div>
+<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;    <a class="code" href="hashtable__api_8h.html#acab608df8c32a0ef8e8c6fe0cfab1208">hashtable_size_t</a> value_size;  </div>
+<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;    uint8_t data[];               </div>
+<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;} _HASHTABLE_PACKED _keyval_pair_t;</div>
+<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160; </div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160; </div>
+<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct</span></div>
+<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;{</div>
+<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;    _keyval_pair_t *head;  </div>
+<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;    _keyval_pair_t *tail;  </div>
+<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;} _keyval_pair_list_t;</div>
+<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160; </div>
+<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160; </div>
+<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct</span></div>
+<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;{</div>
+<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;    _keyval_pair_list_t freelist;  </div>
+<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;    <span class="keywordtype">size_t</span> total_bytes;            </div>
+<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;    <span class="keywordtype">size_t</span> bytes_used;             </div>
+<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;    uint8_t data[];                </div>
+<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;} _keyval_pair_data_block_t;</div>
+<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160; </div>
+<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160; </div>
+<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct</span></div>
+<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;{</div>
+<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;    uint32_t array_count;          </div>
+<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;    _keyval_pair_list_t table[];   </div>
+<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;} _keyval_pair_list_table_t;</div>
+<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160; </div>
+<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160; </div>
+<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct</span></div>
+<div class="line"><a name="l00437"></a><span class="lineno">  437</span>&#160;{</div>
+<div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160;    _keyval_pair_list_table_t *list_table;  </div>
+<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;    _keyval_pair_data_block_t *data_block;  </div>
+<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160;    uint32_t cursor_array_index;            </div>
+<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160;    uint32_t cursor_items_traversed;        </div>
+<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160;    _keyval_pair_t *cursor_item;            </div>
+<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;    uint8_t cursor_limit;                   </div>
+<div class="line"><a name="l00444"></a><span class="lineno">  444</span>&#160;} _keyval_pair_table_data_t;</div>
+<div class="line"><a name="l00445"></a><span class="lineno">  445</span>&#160; </div>
+<div class="line"><a name="l00446"></a><span class="lineno">  446</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// HASHTABLE_API_H</span></div>
 <div class="ttc" id="ahashtable__api_8h_html_a0c2078dfcfaaad328b8d4d8c4a4bb317"><div class="ttname"><a href="hashtable__api_8h.html#a0c2078dfcfaaad328b8d4d8c4a4bb317">hashtable_default_config</a></div><div class="ttdeci">int hashtable_default_config(hashtable_config_t *config, size_t buffer_size)</div></div>
 <div class="ttc" id="ahashtable__api_8h_html_a15986e05c7f0cd9f2cdc8c5b17696b61"><div class="ttname"><a href="hashtable__api_8h.html#a15986e05c7f0cd9f2cdc8c5b17696b61">hashtable_create</a></div><div class="ttdeci">int hashtable_create(hashtable_t *table, const hashtable_config_t *config, void *buffer, size_t buffer_size)</div></div>
 <div class="ttc" id="ahashtable__api_8h_html_a1af5b79bf710f1a8dbe6c54ac0c544fc"><div class="ttname"><a href="hashtable__api_8h.html#a1af5b79bf710f1a8dbe6c54ac0c544fc">hashtable_next_item</a></div><div class="ttdeci">int hashtable_next_item(hashtable_t *table, char **key, hashtable_size_t *key_size, char **value, hashtable_size_t *value_size)</div></div>
@@ -219,16 +219,17 @@ $(function() {
 <div class="ttc" id="ahashtable__api_8h_html_a4e04af9382451a2c86c8e4e84f0a8224"><div class="ttname"><a href="hashtable__api_8h.html#a4e04af9382451a2c86c8e4e84f0a8224">hashtable_reset_cursor</a></div><div class="ttdeci">int hashtable_reset_cursor(hashtable_t *table)</div></div>
 <div class="ttc" id="ahashtable__api_8h_html_a79faa7064b9618b87a0506ee6e842bec"><div class="ttname"><a href="hashtable__api_8h.html#a79faa7064b9618b87a0506ee6e842bec">hashtable_clear</a></div><div class="ttdeci">int hashtable_clear(hashtable_t *table)</div></div>
 <div class="ttc" id="ahashtable__api_8h_html_a7ecf50cf685ca98768a69b328f81e582"><div class="ttname"><a href="hashtable__api_8h.html#a7ecf50cf685ca98768a69b328f81e582">hashtable_insert</a></div><div class="ttdeci">int hashtable_insert(hashtable_t *table, const char *key, const hashtable_size_t key_size, const char *value, const hashtable_size_t value_size)</div></div>
-<div class="ttc" id="ahashtable__api_8h_html_aaff1f8de1b5e4a9ddbdf88a9549e8907"><div class="ttname"><a href="hashtable__api_8h.html#aaff1f8de1b5e4a9ddbdf88a9549e8907">hashtable_hashfunc_t</a></div><div class="ttdeci">uint32_t(* hashtable_hashfunc_t)(const char *data, const hashtable_size_t size)</div><div class="ttdef"><b>Definition:</b> hashtable_api.h:163</div></div>
+<div class="ttc" id="ahashtable__api_8h_html_aaff1f8de1b5e4a9ddbdf88a9549e8907"><div class="ttname"><a href="hashtable__api_8h.html#aaff1f8de1b5e4a9ddbdf88a9549e8907">hashtable_hashfunc_t</a></div><div class="ttdeci">uint32_t(* hashtable_hashfunc_t)(const char *data, const hashtable_size_t size)</div><div class="ttdef"><b>Definition:</b> hashtable_api.h:166</div></div>
+<div class="ttc" id="ahashtable__api_8h_html_acab608df8c32a0ef8e8c6fe0cfab1208"><div class="ttname"><a href="hashtable__api_8h.html#acab608df8c32a0ef8e8c6fe0cfab1208">hashtable_size_t</a></div><div class="ttdeci">size_t hashtable_size_t</div><div class="ttdoc">Defines the type used to represent the size of keys and values stored in the hashtable.</div><div class="ttdef"><b>Definition:</b> hashtable_api.h:134</div></div>
 <div class="ttc" id="ahashtable__api_8h_html_ae33a0f5ea3aca2454d641bf3fe5357fb"><div class="ttname"><a href="hashtable__api_8h.html#ae33a0f5ea3aca2454d641bf3fe5357fb">hashtable_has_key</a></div><div class="ttdeci">int hashtable_has_key(hashtable_t *table, const char *key, const hashtable_size_t key_size)</div></div>
-<div class="ttc" id="astructhashtable__config__t_html"><div class="ttname"><a href="structhashtable__config__t.html">hashtable_config_t</a></div><div class="ttdoc">Configuration data for a single hashtable instance.</div><div class="ttdef"><b>Definition:</b> hashtable_api.h:170</div></div>
-<div class="ttc" id="astructhashtable__config__t_html_a4527e2bffdfccc748eb501b6461e6284"><div class="ttname"><a href="structhashtable__config__t.html#a4527e2bffdfccc748eb501b6461e6284">hashtable_config_t::hash</a></div><div class="ttdeci">hashtable_hashfunc_t hash</div><div class="ttdoc">Hash function to use, must not be NULL.</div><div class="ttdef"><b>Definition:</b> hashtable_api.h:171</div></div>
-<div class="ttc" id="astructhashtable__config__t_html_a9d8a291c925177b83923523141e4ef3a"><div class="ttname"><a href="structhashtable__config__t.html#a9d8a291c925177b83923523141e4ef3a">hashtable_config_t::array_count</a></div><div class="ttdeci">uint32_t array_count</div><div class="ttdoc">Number of table array slots, must not be 0.</div><div class="ttdef"><b>Definition:</b> hashtable_api.h:172</div></div>
-<div class="ttc" id="astructhashtable__t_html"><div class="ttname"><a href="structhashtable__t.html">hashtable_t</a></div><div class="ttdoc">All data for a single hashtable instance.</div><div class="ttdef"><b>Definition:</b> hashtable_api.h:180</div></div>
-<div class="ttc" id="astructhashtable__t_html_a3dc4a946903f00c879c3efc192e429a3"><div class="ttname"><a href="structhashtable__t.html#a3dc4a946903f00c879c3efc192e429a3">hashtable_t::entry_count</a></div><div class="ttdeci">uint32_t entry_count</div><div class="ttdoc">Number of entries in the table.</div><div class="ttdef"><b>Definition:</b> hashtable_api.h:182</div></div>
-<div class="ttc" id="astructhashtable__t_html_a8d5cfcf11d4a4bbaadf6002a373d59cd"><div class="ttname"><a href="structhashtable__t.html#a8d5cfcf11d4a4bbaadf6002a373d59cd">hashtable_t::data_size</a></div><div class="ttdeci">size_t data_size</div><div class="ttdoc">Size of data section.</div><div class="ttdef"><b>Definition:</b> hashtable_api.h:183</div></div>
-<div class="ttc" id="astructhashtable__t_html_a8f424792805347eb5992d008d883a2a5"><div class="ttname"><a href="structhashtable__t.html#a8f424792805347eb5992d008d883a2a5">hashtable_t::table_data</a></div><div class="ttdeci">void * table_data</div><div class="ttdoc">Pointer to buffer for data section.</div><div class="ttdef"><b>Definition:</b> hashtable_api.h:184</div></div>
-<div class="ttc" id="astructhashtable__t_html_ace8cbe560239634c25d7c6879eacf7fc"><div class="ttname"><a href="structhashtable__t.html#ace8cbe560239634c25d7c6879eacf7fc">hashtable_t::config</a></div><div class="ttdeci">hashtable_config_t config</div><div class="ttdoc">Hashtable config data.</div><div class="ttdef"><b>Definition:</b> hashtable_api.h:181</div></div>
+<div class="ttc" id="astructhashtable__config__t_html"><div class="ttname"><a href="structhashtable__config__t.html">hashtable_config_t</a></div><div class="ttdoc">Configuration data for a single hashtable instance.</div><div class="ttdef"><b>Definition:</b> hashtable_api.h:173</div></div>
+<div class="ttc" id="astructhashtable__config__t_html_a4527e2bffdfccc748eb501b6461e6284"><div class="ttname"><a href="structhashtable__config__t.html#a4527e2bffdfccc748eb501b6461e6284">hashtable_config_t::hash</a></div><div class="ttdeci">hashtable_hashfunc_t hash</div><div class="ttdoc">Hash function to use, must not be NULL.</div><div class="ttdef"><b>Definition:</b> hashtable_api.h:174</div></div>
+<div class="ttc" id="astructhashtable__config__t_html_a9d8a291c925177b83923523141e4ef3a"><div class="ttname"><a href="structhashtable__config__t.html#a9d8a291c925177b83923523141e4ef3a">hashtable_config_t::array_count</a></div><div class="ttdeci">uint32_t array_count</div><div class="ttdoc">Number of table array slots, must not be 0.</div><div class="ttdef"><b>Definition:</b> hashtable_api.h:175</div></div>
+<div class="ttc" id="astructhashtable__t_html"><div class="ttname"><a href="structhashtable__t.html">hashtable_t</a></div><div class="ttdoc">All data for a single hashtable instance.</div><div class="ttdef"><b>Definition:</b> hashtable_api.h:183</div></div>
+<div class="ttc" id="astructhashtable__t_html_a3dc4a946903f00c879c3efc192e429a3"><div class="ttname"><a href="structhashtable__t.html#a3dc4a946903f00c879c3efc192e429a3">hashtable_t::entry_count</a></div><div class="ttdeci">uint32_t entry_count</div><div class="ttdoc">Number of entries in the table.</div><div class="ttdef"><b>Definition:</b> hashtable_api.h:185</div></div>
+<div class="ttc" id="astructhashtable__t_html_a8d5cfcf11d4a4bbaadf6002a373d59cd"><div class="ttname"><a href="structhashtable__t.html#a8d5cfcf11d4a4bbaadf6002a373d59cd">hashtable_t::data_size</a></div><div class="ttdeci">size_t data_size</div><div class="ttdoc">Size of data section.</div><div class="ttdef"><b>Definition:</b> hashtable_api.h:186</div></div>
+<div class="ttc" id="astructhashtable__t_html_a8f424792805347eb5992d008d883a2a5"><div class="ttname"><a href="structhashtable__t.html#a8f424792805347eb5992d008d883a2a5">hashtable_t::table_data</a></div><div class="ttdeci">void * table_data</div><div class="ttdoc">Pointer to buffer for data section.</div><div class="ttdef"><b>Definition:</b> hashtable_api.h:187</div></div>
+<div class="ttc" id="astructhashtable__t_html_ace8cbe560239634c25d7c6879eacf7fc"><div class="ttname"><a href="structhashtable__t.html#ace8cbe560239634c25d7c6879eacf7fc">hashtable_t::config</a></div><div class="ttdeci">hashtable_config_t config</div><div class="ttdoc">Hashtable config data.</div><div class="ttdef"><b>Definition:</b> hashtable_api.h:184</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

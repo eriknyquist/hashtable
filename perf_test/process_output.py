@@ -42,7 +42,7 @@ def main():
     ax2 = ax1.twinx()
     ax1.grid(linestyle='dotted')
 
-    ax1.set_title("16MB hashtable stress test", weight='bold', color='#ffffff')
+    ax1.set_title("32MB hashtable stress test", weight='bold', color='#ffffff')
     ax1.get_xaxis().set_major_formatter(matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
     ax2.get_yaxis().set_major_formatter(matplotlib.ticker.FormatStrFormatter('%.2f'))
 

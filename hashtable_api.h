@@ -123,6 +123,9 @@
 #endif // if !defined..
 
 
+/**
+ * @brief Defines the type used to represent the size of keys and values stored in the hashtable
+ */
 #if defined(HASHTABLE_SIZE_T_UINT16)
 typedef uint16_t hashtable_size_t;
 #elif defined(HASHTABLE_SIZE_T_UINT32)

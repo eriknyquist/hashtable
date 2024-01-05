@@ -17,5 +17,6 @@ var searchData=
   ['hashtable_5fremove_19',['hashtable_remove',['../hashtable__api_8h.html#a3a97aa30723003954d795a7a8dd4612b',1,'hashtable_api.h']]],
   ['hashtable_5freset_5fcursor_20',['hashtable_reset_cursor',['../hashtable__api_8h.html#a4e04af9382451a2c86c8e4e84f0a8224',1,'hashtable_api.h']]],
   ['hashtable_5fretrieve_21',['hashtable_retrieve',['../hashtable__api_8h.html#a45f3fe6d72ed5382addf276378966678',1,'hashtable_api.h']]],
-  ['hashtable_5ft_22',['hashtable_t',['../structhashtable__t.html',1,'']]]
+  ['hashtable_5fsize_5ft_22',['hashtable_size_t',['../hashtable__api_8h.html#acab608df8c32a0ef8e8c6fe0cfab1208',1,'hashtable_api.h']]],
+  ['hashtable_5ft_23',['hashtable_t',['../structhashtable__t.html',1,'']]]
 ];
