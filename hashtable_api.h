@@ -29,7 +29,7 @@
  * \section perftest_sec Performance visualization
  *
  * The following graph shows the results from a test program which creates a hashtable
- * instance with a 16MB buffer, and inserts items until the buffer is full (each key
+ * instance with a 32MB buffer, and inserts items until the buffer is full (each key
  * is a 32-bit unsigned integer, and all values are NULL / 0 bytes).
  *
  * After every 2,000 items inserted, the test program performs the following checks;
